@@ -156,6 +156,9 @@ widgets.controls.outletValve = function (settings) {
 	};
 
 	priv.back.addEventListener("mousedown", function (evt) {
+		if(evt.preventDefault) {
+			evt.preventDefault();
+		}
 		priv.grabHandle(evt.clientY);
 	}, false);
 
@@ -274,7 +277,10 @@ widgets.controls.pushButton = function (settings) {
 		fill: "black"
 	});
 
-	priv.buttonPress = function () {
+	priv.buttonPress = function (evt) {
+		if(evt.preventDefault) {
+			evt.preventDefault();
+		}
 		//var justPressed = !priv.pressing;
 		priv.pressing = true;
 		//priv.pressed = true;
