@@ -64,11 +64,12 @@ svg.rgb2str = function (rgb) {
 svg.createText = function (settings) {
 	var text, i, line, span, textArray;
 	text = svg.create("text", {
-		"text-anchor": "middle",
+		"text-anchor": settings.align || "middle",
 		"font-family": "arial",
-		fill: "white",
+		"font-size": settings.fontSize || 20,
+		y: settings.yTop,
 		x: settings.cx,
-		y: settings.yTop
+		fill: settings.color || "white"
 	});
 
 	textArray = (typeof settings.text === 'string') ? [settings.text] : settings.text;
@@ -77,7 +78,6 @@ svg.createText = function (settings) {
 		span = svg.document.createElementNS(svg.ns, "tspan");
 		span.appendChild(line);
 		svg.setAttrs(span, {
-			x: settings.cx,
 			dy: i ? "1em" : "0em"
 		});
 		text.appendChild(span);
