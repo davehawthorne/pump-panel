@@ -89,10 +89,10 @@ var tempUp = 0;
 var debugDisp = function (x, y, text) {
 	var
 		priv = {
-			line: svgDocument.createTextNode(text),
+			line: svg.document.createTextNode(text),
 			baseText: text
 		},
-		textWid = svgDocument.createElementNS(svgns, "text");
+		textWid = svg.document.createElementNS(svgns, "text");
 	setAttrs(textWid, {
 		"text-anchor": "middle",
 		x: x,
@@ -101,7 +101,7 @@ var debugDisp = function (x, y, text) {
 		fill: "red"
 	});
 	textWid.appendChild(priv.line);
-	svgDocument.documentElement.appendChild(textWid);
+	svg.document.documentElement.appendChild(textWid);
 	return {
 		set: function (text) {
 			priv.line.nodeValue = priv.baseText + ":" + text;
@@ -458,11 +458,11 @@ var updatePanel = function () {
 };
 
 
-var buildPumpPanel = function (evt) {
-	svg.setDocument(evt);
-	if (!window.svgDocument) {
-		svgDocument = evt.target.ownerDocument;
-	}
+var buildPumpPanel = function (svgDocument) {
+	svg.setDocument(svgDocument);
+	// if (!window.svgDocument) {
+	// 	svgDocument = evt.target.ownerDocument;
+	// }
 	try {
 		var
 			de = svgDocument.documentElement,

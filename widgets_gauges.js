@@ -151,9 +151,12 @@ widgets.gauges.baseGauge = function (backName, settings) {
 		fill: "white"
 	});
 
-	needle = svgDocument.createElementNS(svgns, "use");
+	needle = svg.document.createElementNS(svgns, "use");
 	needle.setAttributeNS(xlinkNS, "href", "#needle");
 	setAttrs(needle, {x: settings.cx - halfWidth, y: settings.cy - halfWidth, width: settings.size, height: settings.size});
+	if (!settings.parent) {
+		settings.parent = svg.root;
+	}
 	settings.parent.appendChild(needle);
 
 	return {
@@ -436,9 +439,9 @@ widgets.gauges.compound = function (settings) {
 // A digital flow gauge: 0 to 9999lpm
 widgets.gauges.flow = function (settings) {
 	var priv = {
-		textNode: svgDocument.createTextNode("----"),
-		textElem: svgDocument.createElementNS(svgns, "text"),
-		mount: svgDocument.createElementNS(svgns, "circle"),
+		textNode: svg.document.createTextNode("----"),
+		textElem: svg.document.createElementNS(svgns, "text"),
+		mount: svg.document.createElementNS(svgns, "circle"),
 		cx: settings.cx,
 		cy: settings.cy,
 		width: settings.width
@@ -457,6 +460,9 @@ widgets.gauges.flow = function (settings) {
 		fill: "#FF0000"
 	});
 	priv.textElem.appendChild(priv.textNode);
+	if (!settings.parent) {
+		settings.parent = svg.root;
+	}
 	settings.parent.appendChild(priv.mount);
 	settings.parent.appendChild(priv.textElem);
 	return {

@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Pumper Tanker</title>
-    </head>
-    <body>
-        <h1>PT Sim</h1>
-        <embed width="2000" height="1000" src="pumper_tanker.svg" type="image/svg+xml"></embed>
-        <p>Done</p>
-    </body>
+	<head>
+		<title>Boronia Pumper Tanker Simulation</title>
+		<link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
+
+		<script type="text/javascript" src="3rdParty/jquery.js"></script>
+		<script type="text/ecmascript" src="3rdParty/jquery.svg.js"></script>
+		<script type="text/ecmascript" src="utils.js"></script>
+		<script type="text/ecmascript" src="svg.js"></script>
+		<script type="text/ecmascript" src="models.js"></script>
+		<script type="text/ecmascript" src="tank.js"></script>
+		<script type="text/ecmascript" src="lamps.js"></script>
+		<script type="text/ecmascript" src="widgets_gauges.js"></script>
+		<script type="text/ecmascript" src="widgets_controls.js"></script>
+		<script type="text/ecmascript" src="pumper_tanker.js"></script>
+		<script type="text/ecmascript">
+
+			function drawIntro(svg) {
+				buildPumpPanel(svg.root());
+			}
+			$(function() {
+				$('#pumpPanel').svg({onLoad: drawIntro, settings:{ width: 2000, height: 1000} });
+			});
+		</script>
+	</head>
+	<body>
+		<h1>Boronia Pumper Tanker Simulation</h1>
+		<div id="pumpPanel"></div>
+	</body>
 </html>
 
