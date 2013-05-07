@@ -59,7 +59,7 @@ var modelComponents = {
 	branch: {
 		protek366: function (settings) {
 			var priv = {
-				minWorkingPres: 300,
+				minWorkingPres: 700,
 				setFlow: 475,
 				open: false
 			};

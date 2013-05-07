@@ -5,7 +5,9 @@ var widgets;
 if (!widgets) {
 	widgets = {};
 }
-
+///
+/// Notes:
+///   All pressures are relative to atmospheric: 100kPa
 
 var showWarning = function (text) {
 
@@ -129,7 +131,74 @@ var periodic = function (evt, active) {
 };
 */
 
+/*
+/// Includes hydrant valve, hose losses, inlet valve loss and plumbing to the
+/// pump eye.
+var computeDeliveryLoss = function() {
+	var
+		i,
+		hoseResist = 10,   //TEMP!!!  // friction loss factor of a single line
+		conductivity = 0.0,
+		equivResist;
 
+	if (!hydrantValve.open()) {
+
+	}
+	// if no inlet valves open, or hydrant valve closed then there's just no flow.
+
+	// Check the two 65mm inlets first; we have to factor in an extra loss due to
+	// the tight 90deg bends in the plumbing.
+	for (i = 0; i < 2; i++) {
+		if (inletValve[i].open()) {
+			conductivity += Math.pow(hoseResist + inletValve[i].resist() + plumbResist, -0.5);
+		}
+	}
+	// Now do the 125mm inlet.  Note that we don't have an extra plumbing loss
+	if (inletValve[2].open()) {
+		// We twin lines into this inlet so hose resistance factor is one quarter
+		conductivity += Math.pow(hoseResist/4 + inletValve[i].resist(), -0.5);
+	}
+
+	if (conductivity > 0.0) {
+		equivResist = Math.pow(conductivity, -2.0);
+	}
+
+	// add in
+}
+*/
+
+/*
+	calc flow from branches based on branch pressure
+	tally flow
+	check delivery flow okay, hose and pump
+	calc pres based on flow
+	get mid point and repeat.
+
+
+
+
+
+foreach open inlet
+	get flow from pres
+	and cap (and flag collapse)
+	tally up
+
+
+Once one line hits max flow then the combined flow can't increase
+we can therefore calc max flow
+if we hit max flow then we know inlet pressure and flow so can calc branch flow based on this
+
+
+
+
+
+
+fmax = f(phy, hose)
+
+*/
+
+/// Converge on a flow value through outlet valve, hose and branch
+/// Assumes the pump pressure is fixed.
 var calcOutFlow = function (presIn, branch, hosePresDrop, valvePresDrop) {
 	var
 		flow,
@@ -153,6 +222,8 @@ var calcOutFlow = function (presIn, branch, hosePresDrop, valvePresDrop) {
 };
 
 
+
+
 var model = (function () {
 	var i, engine, flow, engineTick, attackLineFricLoss, supplyLineFricLoss, boost, branch, outValve, inValve, pres, hydraulicTick, iterateFlow, tank, tankOutOpen;
 
@@ -163,7 +234,7 @@ var model = (function () {
 		modelComponents.hose.fricLoss.curry(modelComponents.hose.lossFactor.h65, 3, 1)
 	];
 
-	supplyLineFricLoss = modelComponents.hose.fricLoss.curry(modelComponents.hose.lossFactor.h65, 3, 2);
+	supplyLineFricLoss = modelComponents.hose.fricLoss.curry(modelComponents.hose.lossFactor.h65, 1, 2);
 
 	boost = modelComponents.gaam.mk450.normalPressureBoost;
 	branch = [
@@ -179,7 +250,7 @@ var model = (function () {
 	}
 
 	inValve = [];
-	for (i = 0; i < 5; i += 1) {
+	for (i = 0; i < 2; i += 1) {
 		inValve[i] = modelComponents.valve(50);
 	}
 
@@ -249,7 +320,15 @@ var model = (function () {
 			}
 		} else {
 			// hydrant flow
-			pres.pumpEye = pres.hydrant - supplyLineFricLoss(flow.total) - inValve[0].presDrop(flow.total);
+			do {
+				pres.pumpEye = pres.hydrant - supplyLineFricLoss(flow.total) - inValve[0].presDrop(flow.total);
+				if (pres.pumpEye < 0) {
+					flow.total = flow.total * 0.95;
+					$('#ticks').html("collapse");            //TEMP!!!
+				}
+			} while (pres.pumpEye < 0);
+				// hydrant line collapsed
+
 		}
 		pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
 		for (outlet = 0; outlet < 5; outlet += 1) {
@@ -271,6 +350,7 @@ var model = (function () {
 		}
 
 	};
+
 	iterateFlow = function (flow) {
 		var
 			presBranch,
@@ -287,6 +367,7 @@ var model = (function () {
 		debug.ep.set(pres.pumpEye);
 		//debug.op.set(presOutlet);
 		//debug.bp.set(presBranch);
+		$('#tankLevel').html(branchFlow[0]);
 		debug.bf0.set(branchFlow[0]);
 		debug.bf1.set(branchFlow[1]);
 		debug.bf2.set(branchFlow[2]);
@@ -298,6 +379,14 @@ var model = (function () {
 	};
 
 	return {
+		setHydrantLengths: function(l) {
+			supplyLineFricLoss = modelComponents.hose.fricLoss.curry(modelComponents.hose.lossFactor.h65, l, 1);
+		},
+		setHydrantPres: function(p) {   //TEMP!!!
+			pres.hydrant = p;
+		},
+		setHydrantLineRise: function(h) {
+		},
 		setOutValve: function (index, value) {
 			outValve[index].set(value);
 		},
@@ -345,8 +434,19 @@ var model = (function () {
 		},
 
 		tick: function () {
+			try {
+
 			engineTick();
 			hydraulicTick();
+			$('#tankLevel').html(tank.getWater());
+			$('#totalFlow').html(flow.total);
+			$('#pumpPresOut').html(pres.pumpOut);
+			$('#pumpPresEye').html(pres.pumpEye);
+			}
+			catch (ex) {
+			   handleException(ex);
+			}
+
 		},
 
 		waterOn: function (index, on) {
@@ -406,12 +506,6 @@ var getNewFlow = function (oldFlow) {
 };
 */
 
-var timerProc = function () {
-	// check for state change
-	// update model if needed
-	// iterate model
-	// update gauges
-};
 
 
 
@@ -458,7 +552,7 @@ var updatePanel = function () {
 };
 
 
-var buildPumpPanel = function (svgDocument) {
+var buildPumpPanel = function (jqSvg, svgDocument) {
 	svg.setDocument(svgDocument);
 	// if (!window.svgDocument) {
 	// 	svgDocument = evt.target.ownerDocument;
@@ -473,7 +567,8 @@ var buildPumpPanel = function (svgDocument) {
 			//TEMP!!!active,
 			i,
 			x,
-			sideways;
+			sideways,
+			heart = timerHeart(10);  // ten times per second
 
 		active = {
 			outGauge: widgets.gauges.outlet({parent: de, cx: 350, cy: 180, size: 150}),
@@ -527,6 +622,9 @@ var buildPumpPanel = function (svgDocument) {
 			});
 		}
 
+		heart.addCallback(model.tick);
+		heart.addCallback(updatePanel);
+
 		debug.felt = svg.create("rect", {parent: de, x: 1500, y: 0, width: 400, height: 800, fill: "green"});
 		panel.addEventListener("mouseout", function (evt) {
 			tempUp += 1;
@@ -552,21 +650,33 @@ var buildPumpPanel = function (svgDocument) {
 		debug.branch = widgets.controls.toggleSwitch({cx: 1600, cy: 400, width: 20, text: ["BRANCH1"], callback: model.waterOn.curry(1)});
 		debug.branch = widgets.controls.toggleSwitch({cx: 1600, cy: 450, width: 20, text: ["BRANCH2"], callback: model.waterOn.curry(2)});
 		debug.branch = widgets.controls.toggleSwitch({cx: 1600, cy: 500, width: 20, text: ["BRANCH3"], callback: model.waterOn.curry(3)});
-		debug.step = widgets.controls.toggleSwitch({cx: 1600, cy: 600, width: 20, text: ["STEP"]});
-		widgets.controls.pushButton({cx: 1600, cy: 650, width: 40, text: ["STEP"], callback: function () {
-			model.tick();
-			updatePanel();
-		}});
 
+		debug.timerInt = timerInterface(jqSvg, 1600, 30, 50, heart);
+		jqSvg.text(1510, 120, "hydrant line lengths");
+		debug.hydrantLineLength = numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 1, function(x){model.setHydrantLengths(x);});
+		jqSvg.text(1510, 155, "hydrant pressure [kPa]");
+		debug.hydrantPressure = numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 500, function(x){model.setHydrantPres(x);});
+		jqSvg.text(1510, 190, "hydrant line rise [m]");
+		debug.hydrantLineRise = numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, function(x){model.setHydrantLineRise(x);});
 
-		setInterval(function () {
-			if (!debug.step.isOn()) {
-				return;  //TEMP!!!
-			}
-			model.tick();
-			updatePanel();
+		// debug.step = widgets.controls.toggleSwitch({cx: 1600, cy: 600, width: 20, text: ["STEP"]});
+		// widgets.controls.pushButton({cx: 1600, cy: 650, width: 40, text: ["STEP"], callback: function () {
+		// 	model.tick();
+		// 	updatePanel();
+		// }});
+		//
+		//
+		// setInterval(function () {
+		// 	if (!debug.step.isOn()) {
+		// 		return;  //TEMP!!!
+		// 	}
+		// 	model.tick();
+		// 	updatePanel();
+		//
+		// }, 100);
 
-		}, 100);
+		model.tick();
+		updatePanel();
 
 	}
 	catch (ex) {

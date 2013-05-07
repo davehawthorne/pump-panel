@@ -3,6 +3,11 @@
 	<head>
 		<title>Boronia Pumper Tanker Simulation</title>
 		<link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
+		<style type="text/css">
+			table {border-collapse: collapse; border: 2px solid red;}
+			th {border: 1px solid red; padding: 10px;}
+			td {border: 1px solid red; padding: 10px;}
+		</style>
 
 		<script type="text/javascript" src="3rdParty/jquery.js"></script>
 		<script type="text/ecmascript" src="3rdParty/jquery.svg.js"></script>
@@ -17,16 +22,37 @@
 		<script type="text/ecmascript">
 
 			function drawIntro(svg) {
-				buildPumpPanel(svg.root());
+				buildPumpPanel(svg, svg.root());
+				muck();
+				// $('#tankLevel').html('hello');
 			}
 			$(function() {
-				$('#pumpPanel').svg({onLoad: drawIntro, settings:{ width: 2000, height: 1000} });
+				$('#pumpPanel').svg({onLoad: drawIntro, settings:{ width: 2000, height: 800} });
 			});
+
+			muck = function() {
+				var table = $('#attack');
+				table.append($('<tr>').append($('<th>').append($('<p>').html("hello"))));
+				table.append($('<tr>').append($('<th>').append($('<p>').html("bye"))));
+				table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="38">38</option><option value="64">64</option></select>'))));
+				table.append($('<tr>').append($('<th>').append($('<input type="text" value="1"/>'))));
+				table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475</option><option value="350">350</option><option value="125">125</option></select>'))));
+			}
 		</script>
 	</head>
 	<body>
 		<h1>Boronia Pumper Tanker Simulation</h1>
 		<div id="pumpPanel"></div>
+		<table id="other">
+			<tr><th>tank level [l]</th><td id='tankLevel'>-</td></tr>
+			<tr><th>ticks</th><td id='ticks'>-</td>
+			<tr><th>totalFlow</th><td id='totalFlow'>-</td>
+			<tr><th>pumpPresOut</th><td id='pumpPresOut'>-</td>
+			<tr><th>pumpPresEye</th><td id='pumpPresEye'>-</td>
+			<tr><th>compDuration</th><td id='compDuration'>-</td>
+		</table>
+		<table id="attack">
+		</table>
 	</body>
 </html>
 

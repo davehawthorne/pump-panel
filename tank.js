@@ -43,6 +43,9 @@ modelComponents.tank = function (settings) {
 				priv.water = priv.cap;
 			}
 		},
+		getWater: function() {
+			return priv.water;
+		},
 		getLevel: function () {
 			return priv.water / priv.cap;
 		}
