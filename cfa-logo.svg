@@ -3,6 +3,7 @@
 "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000">
 
+  <!-- Built by Dave Hawthorne; based on logo in the PDF version of the operations checklist -->
   <rect x="0" y="0" width="1000" height="1000"
 	 style="fill:white; fill-opacity:1; stroke:none"/>
 
