@@ -1,4 +1,19 @@
 "use strict";
+
+////TEMP!!!
+///// squareroot function
+//var sqrt = function(x) {
+//    return Math.pow(x, 0.5);
+//}
+//
+//
+///// square function
+//var sq = function(x) {
+//    return x * x;
+//}
+////TEMP!!!
+
+
 var modelComponents = {
     gaam: {
         mk450: {
@@ -16,7 +31,7 @@ var modelComponents = {
 
     hose: {
         fricLoss: function (resistance, lengths, parallel, flow) {
-            return lengths * Math.pow(flow / parallel, 2) * resistance;
+            return lengths * sq(flow / parallel) * resistance;
         },
 
 
@@ -35,9 +50,7 @@ var modelComponents = {
     valve: function (midWayPresDrop, forFlow) {
         var priv = {
             opening: 0.0,
-            halfwayResistance: midWayPresDrop / Math.pow(forFlow, 2),
-        };
-        return {
+            halfwayResistance: midWayPresDrop / sq(forFlow),
             resistance: function () {
                 if (priv.opening == 0.0) {
                     return Number.POSITIVE_INFINITY
@@ -45,13 +58,16 @@ var modelComponents = {
                     return priv.halfwayResistance * (1.0 /priv.opening - 1.0);
                 }
             },
+        };
+        return {
+            resistance: priv.resistance,
 
             presDrop: function (flow) {
-                return resistance() * Math.pow(flow, 2);
+                return priv.resistance() * sq(flow);
             },
 
             flowRate: function (presIn, presOut) {
-                return Math.pow((presIn - presOut) / resistance(), 0.5);
+                return sq((presIn - presOut) / resistance());
             },
 
             set: function (opening) {
@@ -81,7 +97,7 @@ var modelComponents = {
                     //    return 0.0;
                     //} else
                     if (pres < priv.minWorkingPres) {
-                        return priv.setFlow * (1.0 - Math.pow(1.0 - pres / priv.minWorkingPres, 2));
+                        return priv.setFlow * (1.0 - sq(1.0 - pres / priv.minWorkingPres));
                     } else {
                         return priv.setFlow;
                     }

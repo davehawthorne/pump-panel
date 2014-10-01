@@ -11,6 +11,7 @@ if (!widgets) {
 ///   Pressures given in kPa, flows in l/min
 
 
+/// Helper function
 var setAttrs = function (element, atts) {
     var atName;
     for (atName in atts) {
@@ -23,11 +24,15 @@ var setAttrs = function (element, atts) {
 
 var handleException = function (ex) {
     var
-        msg = "",
+        msg = "EX ",
         i;
-    for (i in ex) {
-        if (typeof ex[i] !== 'function') {
-            msg += i + ":" + ex[i] + "\n";
+    if (typeof ex === 'string') {
+        msg += ex;
+    } else {
+        for (i in ex) {
+            if (typeof ex[i] !== 'function') {
+                msg += i + ":" + ex[i] + "\n";
+            }
         }
     }
     alert(msg);
@@ -120,14 +125,17 @@ var calcOutFlow = function (presIn, branch, hosePresDrop, valvePresDrop) {
     var
         flow,
         pres,
-        presUp = presIn,
-        presLo = 0,
+        presUp = presIn,  // upper limit of branch pressure
+        presLo = 0,       // lower limit of branch pressure
         presTry,
         count;
 
     for (count = 0; count < 10; count += 1) {
+        // pick mid point for branch pressure
         presTry = (presUp + presLo) / 2;
+        // determine flow for that.
         flow = branch.flow(presTry);
+        // determine the pres for that flow
         pres = presIn - valvePresDrop(flow) - hosePresDrop(flow);
         if (pres < presTry) {
             presUp = presTry;
@@ -251,7 +259,9 @@ var model = (function () {
         if (totalFlow > hydrantParams.maxFlow) {
             //TEMP!!! dunno what we do
         }
-        pres.pumpEye = pres.hydrant - hydrantParams.equivResist * Math.pow(totalFlow/1000, 2);
+        pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(totalFlow/1000);
+
+        //TEMP!!! x("ppe:" + pres.pumpEye + " " + pres.hydrant + " " + hydrantParams.equivResist + " " + sq(totalFlow/1000));
         //TEMP!!! alert(pres.hydrant + ' ' + totalFlow + " " + hydrantParams.equivResist);  //TEMP!!!
 
         /*
@@ -402,15 +412,16 @@ var model = (function () {
         tick: function () {
             try {
 
-            engineTick();
-            hydraulicTick();
-            $('#tankLevel').html(tank.getWater());
-            $('#totalFlow').html(flow.total);
-            $('#pumpPresOut').html(pres.pumpOut);
-            $('#pumpPresEye').html(pres.pumpEye);
+                engineTick();
+                hydraulicTick();
+                //TEMP!!! updatePanel();
+                $('#tankLevel').html(tank.getWater());
+                $('#totalFlow').html(flow.total);
+                $('#pumpPresOut').html(pres.pumpOut);
+                $('#pumpPresEye').html(pres.pumpEye);
             }
             catch (ex) {
-                alert("tick");  //TEMP!!!
+                //TEMP!!! alert("tick");  //TEMP!!!
                handleException(ex);
             }
 

@@ -337,7 +337,14 @@ var timerInterface = function(svg, x, y, h, heart)
 }
 
 
+/// squareroot function
 var sqrt = function(x) {
     return Math.pow(x, 0.5);
+}
+
+
+/// square function
+var sq = function(x) {
+    return x * x;
 }
 
