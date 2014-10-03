@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <title>Test Attack</title>
+        <script type="text/javascript" src="utils.js"></script>
+        <script type="text/javascript" src="attack_line.js"></script>
+        <script type="text/ecmascript">
+
+            var al;
+
+            function getInput(name) {
+                return document.getElementById(name).value * 1.0;
+            }
+            function setInput(name, val) {
+                document.getElementById(name).value = '' + val;
+            }
+            function get(name) {
+                return document.getElementById(name).textContent * 1.0;
+            }
+            function set(name, val) {
+                document.getElementById(name).textContent = '' + val;
+            }
+
+            function click() {
+                var i, txt='-', priv = []; // al.hack();
+
+                for (i in priv) {
+                    txt = txt + i + ': ' + priv[i] + " ";
+                }
+                set('click', txt);
+                al.dialUpFlow(getInput('dialUpFlow'));
+                al.setHoseResistance(getInput('hoseResistance')/1e6);
+                al.setWorkingPres(getInput('workingPres'));
+                al.setRise(getInput('rise'));
+                var flow = al.getFlow(getInput("pumpPres"));
+                set('flow', flow);
+
+            }
+            function setHoseResistance() {
+                click();
+            }
+            function setWorkingPres() {
+                click();
+            }
+            function setPumpPres() {
+                click();
+            }
+            function setRise() {
+                click();
+            }
+            function dialUpFlow() {
+                click();
+            }
+            function getFlow() {
+                click();
+            }
+            function setMyFlow() {
+                getBranchPres();
+            }
+            function getBranchPres() {
+                var pres = al.getBranchPres(getInput("myFlow"), getInput("pumpPres"));
+                set('bPres', pres);
+            }
+        window.onload = function () {
+            al = attackLine();
+            setInput("pumpPres", 1000);
+            setInput("workingPres", 700);
+            setInput("dialUpFlow", 475);
+            setInput("rise", 0);
+            setInput("hoseResistance", 400);
+            setInput("myFlow", 100)
+            click();
+
+        }
+        </script>
+    </head>
+    <p>flows in kL/min</p>
+    <p>resistance in kPa/(l/min)^2</p>
+    <div id="click">1</div>
+    <body>
+        <table border=1>
+        <tr><td>hoseResistance<input id="hoseResistance" type="text" onchange="setHoseResistance();"/>kPa @ 1000l/min</td></tr>
+
+        <tr><td>workingPres<input id="workingPres" type="text"  onchange="setWorkingPres();"/>kPa</td></tr>
+        <tr><td>rise<input id="rise" type="text" onchange="setRise();"  />m</td></tr>
+        <tr><td>dialUpFlow<input id="dialUpFlow" type="text" onchange="dialUpFlow();" />l/min</td></tr>
+        <tr><td>pumpPres<input id="pumpPres" type="text" onchange="setPumpPres();" />kPa</td></tr>
+
+        <tr><td><span style="background-color:red; border:solid;" onclick="getFlow();">Get Flow</span> Flow = <span id="flow">-</span> l/min</td></tr>
+
+        <tr><td>setMyFlow<input id="myFlow" type="text" onchange="setMyFlow();"/> getBranchPres <span style="background-color:red; border:solid;" onclick="getBranchPres();">Get pres for flow</span> Branch pressure = <span id="bPres">-</span> kPa</td></tr>
+        </table>
+    </body>
+</html>
+

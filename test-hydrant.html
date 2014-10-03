@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <title>Test Hydrant</title>
+        <script type="text/javascript" src="hydrant_line.js"></script>
+        <script type="text/ecmascript">
+
+            function inValve(halfwayRes) {
+                var priv = {
+                    opening: 0.0,
+                    resistance: function () {
+
+                    }
+                };
+                return {
+                    resistance: function() {
+                        return halfwayRes * (1.0 / priv.opening - 1.0);
+                    },
+                    set: function (opening) {
+                        priv.opening = opening;
+                    },
+                    closed: function () {
+                        return priv.opening == 0.0;
+                    }
+                };
+            };
+
+            function run() {
+                var
+                    model = {
+                        lengthResistance: 1.0 * document.getElementById('hoseRes').value,
+                        lengths: 1.0 * document.getElementById('hoseNum').value,
+                        plumbResistance: 1.0 * document.getElementById('plumbRes').value
+                    },
+                    inValves = [
+                        inValve(1.0 * document.getElementById('halfwayRes').value),
+                        inValve(1.0 * document.getElementById('halfwayRes').value),
+                        inValve(1.0 * document.getElementById('halfwayRes').value)
+                    ],
+                    hydrantPres = 1.0 * document.getElementById('hydrantPres').value,
+                    res,
+                    i,
+                    k,
+                    txt = '';
+
+                for (i=0; i<3; i++) {
+                    inValves[i].set(1.0 * document.getElementById('v'+i).value);
+                    if (inValves[i].closed()) {
+                        txt += "closed; ";
+                    } else {
+                        txt += inValves[i].resistance() + "; ";
+                    }
+                }
+                document.getElementById('valves').textContent = txt;
+
+                res = computeDeliveryLoss(hydrantPres, model, inValves);
+
+                txt = 'RES: ';
+                for (k in res) {
+                    txt += k + ': ' + res[k] + ' ';
+                }
+                document.getElementById('out').textContent = txt;
+
+            }
+
+            /*
+            $(function() {
+
+            });
+
+            muck = function() {
+                var table = $('#attack');
+                table.append($('<tr>').append($('<th>').append($('<p>').html("hello"))));
+                table.append($('<tr>').append($('<th>').append($('<p>').html("bye"))));
+                table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="38">38</option><option value="64">64</option></select>'))));
+                table.append($('<tr>').append($('<th>').append($('<input type="text" value="1"/>'))));
+                table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475</option><option value="350">350</option><option value="125">125</option></select>'))));
+            }
+            */
+        </script>
+    </head>
+    <p>flows in kL/min</p>
+    <p>resistance in kPa/(kL/min)^2</p>
+    <body>
+        <table border=1>
+        <tr><td>hose num<input id="hoseNum" type="text"/> hose res<input id="hoseRes" type="text"/></td></tr>
+        <tr><td>plumbRes<input id="plumbRes" type="text"/> halfwayRes <input id="halfwayRes" type="text"/></td></tr>
+        <tr><td>valves <input id="v0" type="text"/> <input id="v1" type="text"/> <input id="v2" type="text"/></td></tr>
+        <tr><td>hydrantPres<input id="hydrantPres" type="text"/></td></tr>
+        <tr><td><div id="valves"></div></td></tr>
+        <tr><td><div id="out"></div></td></tr>
+        <tr><td><div onclick="run();">Click Me</div></td></tr>
+        </table>
+    </body>
+</html>
+

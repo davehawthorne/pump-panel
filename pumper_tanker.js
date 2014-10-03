@@ -74,22 +74,6 @@ var debug = {};
 
 
 /*
-var periodic = function (evt, active) {
-    var
-        throttle = 0,
-        rpm = 0;
-
-    if (throttle === 0) {
-        if (active.offOn.isOn()) {
-            throttle = 800;
-        }
-    } else {
-        if (active.
-
-};
-*/
-
-/*
     calc flow from branches based on branch pressure
     tally flow
     check delivery flow okay, hose and pump
@@ -119,40 +103,14 @@ fmax = f(phy, hose)
 
 */
 
-/// Converge on a flow value through outlet valve, hose and branch
-/// Assumes the pump pressure is fixed.
-var calcOutFlow = function (presIn, branch, hosePresDrop, valvePresDrop) {
-    var
-        flow,
-        pres,
-        presUp = presIn,  // upper limit of branch pressure
-        presLo = 0,       // lower limit of branch pressure
-        presTry,
-        count;
-
-    for (count = 0; count < 10; count += 1) {
-        // pick mid point for branch pressure
-        presTry = (presUp + presLo) / 2;
-        // determine flow for that.
-        flow = branch.flow(presTry);
-        // determine the pres for that flow
-        pres = presIn - valvePresDrop(flow) - hosePresDrop(flow);
-        if (pres < presTry) {
-            presUp = presTry;
-        } else {
-            presLo = presTry;
-        }
-    }
-    return flow;
+function daveThing(name, val) {
+     $('#' + name).html('' + val);
 };
-
-
-
 
 var model = (function () {
     var
         i, engine, flow, engineTick, attackLineFricLoss, supplyLineFricLoss,
-        boost, branch, outValve, inValve, pres, hydraulicTick, iterateFlow,
+        boost, al, outValve, inValve, pres, hydraulicTick, iterateFlow,
         hydrantParams = {open: false},
 
         hydrantModel = {
@@ -172,23 +130,29 @@ var model = (function () {
 
 
     boost = modelComponents.gaam.mk450.normalPressureBoost;
-    branch = [
-        modelComponents.branch.protek366(),
-        modelComponents.branch.protek366(),
-        modelComponents.branch.protek366(),
-        modelComponents.branch.protek366()
-    ];
+    //TEMP!!! branch = [
+    //TEMP!!!     modelComponents.branch.protek366(),
+    //TEMP!!!     modelComponents.branch.protek366(),
+    //TEMP!!!     modelComponents.branch.protek366(),
+    //TEMP!!!     modelComponents.branch.protek366()
+    //TEMP!!! ];
 
     // 5 values, 4 outlets and recirc
     outValve = [];
     for (i = 0; i < 5; i += 1) {
-        outValve[i] = modelComponents.valve(500);
+        outValve[i] = modelComponents.valve(500, 1000);
+    }
+
+    al = [];
+    for (i = 0; i < 4; i += 1) {
+        al[i] = attackLine();
+
     }
 
     inValve = [
-        modelComponents.valve(500), // left inlet at halfway 1kL/min flow drops 500kPa through valve
-        modelComponents.valve(250), // greater flow though hard suction input
-        modelComponents.valve(500) // fight inlet same as left
+        modelComponents.valve(500, 1000), // left inlet at halfway 1kL/min flow drops 500kPa through valve
+        modelComponents.valve(250, 1000), // greater flow though hard suction input
+        modelComponents.valve(500, 1000) // right inlet same as left
     ];
 
     tank = modelComponents.tank({
@@ -232,7 +196,6 @@ var model = (function () {
                 engine.rpm += 50;
                 if (engine.rpm > 4000) {
                     // red-lining
-                    //TEMP!!!
                 }
                 break;
             case -1:
@@ -251,65 +214,22 @@ var model = (function () {
         var
             outlet,
             total = 0.0,  //TEMP!!!
-            fromTank = false,  //TEMP!!!
-            totalFlow = 0.0;  // kL/min
-        for (outlet = 0; outlet < 5; outlet += 1) {
-            totalFlow += flow.outlet[outlet];
-        }
-        if (totalFlow > hydrantParams.maxFlow) {
-            //TEMP!!! dunno what we do
-        }
-        pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(totalFlow/1000);
+            fromTank = false;  //TEMP!!!
+            // totalFlow = 0.0;  // kL/min
 
-        //TEMP!!! x("ppe:" + pres.pumpEye + " " + pres.hydrant + " " + hydrantParams.equivResist + " " + sq(totalFlow/1000));
-        //TEMP!!! alert(pres.hydrant + ' ' + totalFlow + " " + hydrantParams.equivResist);  //TEMP!!!
+        pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(flow.total);
 
-        /*
-    };
-
-        // adjust pres based on flow
-
-
-        var outlet, total = 0.0, fromTank = false;
-        if (hydrantParams.open) {
-            pres.pumpEye
-        if (inValve[0].closed() && inValve[1].closed()) {
-            if (tankOutOpen) {
-                fromTank = true;
-                // flow just from tank
-                pres.pumpEye = tank.pressure();
-            } else {
-                for (outlet = 0; outlet < 5; outlet += 1) {
-                    flow.outlet[outlet] = 0.0;
-                }
-                flow.total = 0.0;
-                pres.pumpOut = 0.0;
-                pres.pumpEye = 0.0;
-                pres.pumpHp = 0.0;
-                // no flow
-            }
-        } else {
-            // hydrant flow
-            do {
-                pres.pumpEye = pres.hydrant - supplyLineFricLoss(flow.total) - inValve[0].presDrop(flow.total);
-                if (pres.pumpEye < 0) {
-                    flow.total = flow.total * 0.95;
-                    $('#ticks').html("collapse");            //TEMP!!!
-                }
-            } while (pres.pumpEye < 0);
-                // hydrant line collapsed
-
-        }
-        */
         pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
+
         for (outlet = 0; outlet < 5; outlet += 1) {
             if (outValve[outlet].closed()) {
                 flow.outlet[outlet] = 0.0;
             } else {
                 if (outlet < 4) {
-                    flow.outlet[outlet] = calcOutFlow(pres.pumpOut, branch[outlet], attackLineFricLoss[outlet], outValve[outlet].presDrop);
-                    //TEMP!!! alert(flow.outlet[outlet]); //TEMP!!!
+                    // attack line
+                    flow.outlet[outlet] = al[outlet].getFlow(pres.pumpOut);
                 } else {
+                    // tank fill
                     flow.outlet[outlet] = outValve[outlet].flowRate(pres.pumpOut, 10);  //TEMP!!!
                     tank.fill(flow.outlet[outlet] / 600);
                 }
@@ -317,44 +237,22 @@ var model = (function () {
             total += flow.outlet[outlet];
         }
         flow.total = (flow.total + total) / 2;
-        if (fromTank) {
+
+        if (isNaN(flow.total)) {
+            flow.total = 0
+        }
+
+        if (fromTank) { //TEMP!!! disabled
             tank.draw(flow.total / 600);
         }
 
     };
 
-    iterateFlow = function (flow) {
-        var
-            presBranch,
-            branchFlow = [],
-            totalFlow = 0,
-            outlet;
-            //TEMP!!!pos = active.vRightBack.getPosition(),
-
-
-
-
-        debug.of.set(flow);
-        debug.pp.set(pres.pumpOut);
-        debug.ep.set(pres.pumpEye);
-        //debug.op.set(presOutlet);
-        //debug.bp.set(presBranch);
-        $('#tankLevel').html(branchFlow[0]);
-        debug.bf0.set(branchFlow[0]);
-        debug.bf1.set(branchFlow[1]);
-        debug.bf2.set(branchFlow[2]);
-        debug.bf3.set(branchFlow[3]);
-        //    branchFlow[o] = branchFlow(presBranch);
-        //    totalFlow += branchFlow[o];
-        //}
-        return totalFlow;
-    };
 
     return {
         setHydrantLengths: function(l) {
             hydrantModel.lengths = l;
             hydrantParams = computeDeliveryLoss(pres.hydrant, hydrantModel, inValve);
-            //TEMP!!! supplyLineFricLoss = modelComponents.hose.fricLoss.curry(modelComponents.hose.lossFactor.h65, l, 1);
         },
         setHydrantPres: function(p) {   //TEMP!!!
             pres.hydrant = p;
@@ -364,6 +262,9 @@ var model = (function () {
         },
         setOutValve: function (index, value) {
             outValve[index].set(value);
+            temp = outValve[index].resistance() + 1/650;    //TEMP!!!
+            daveThing('compDuration', temp);
+            al[index].setHoseResistance(temp);
         },
 
         setInValve: function (index, value) {
@@ -415,20 +316,19 @@ var model = (function () {
                 engineTick();
                 hydraulicTick();
                 //TEMP!!! updatePanel();
-                $('#tankLevel').html(tank.getWater());
-                $('#totalFlow').html(flow.total);
-                $('#pumpPresOut').html(pres.pumpOut);
-                $('#pumpPresEye').html(pres.pumpEye);
+                daveThing('tankLevel', tank.getWater());
+                daveThing('totalFlow', flow.total);
+                daveThing('pumpPresOut', pres.pumpOut);
+                daveThing('pumpPresEye', pres.pumpEye);
             }
             catch (ex) {
-                //TEMP!!! alert("tick");  //TEMP!!!
                handleException(ex);
             }
 
         },
 
         waterOn: function (index, on) {
-            branch[index].waterOn(on);
+            al[index].waterOn(on);
         },
 
         getPumpOutletPres: function () {
@@ -458,64 +358,7 @@ var model = (function () {
 
 
 
-var state;  //TEMP!!!
 
-
-
-
-/*
-var getNewFlow = function (oldFlow) {
-    var lastDiff = Infinity,
-        newFlow,
-        diff,
-        cycles = 0;
-
-    do {
-        cycles += 1;
-        newFlow = iterateFlow(oldFlow);
-        diff = Math.abs(newFlow - oldFlow);
-        if (diff > lastDiff) {
-            throw "not converging";
-        }
-        lastDiff = diff;
-    } while (false && diff > 10 && cycles < 10);
-    //TEMP!!! debug.cycles.set(cycles);
-    return newFlow * 0.5 + oldFlow * 0.5;
-};
-*/
-
-
-
-
-
-/*
-var tick = function (active) {
-    var presEye, presOutlet;
-    if (state.state === "running") {
-        if (active.increaseRevs.wasPressed()) {
-            state.engineRpm += 100;
-            active.revGauge.showPressure(state.engineRpm);
-        } else if (active.decreaseRevs.wasPressed()) {
-            state.engineRpm -= 100;
-            if (state.engineRpm < 700) {
-                showWarning("Engine stalled");
-                state.state = "ready";
-                state.engineRpm = 0;
-            }
-            active.revGauge.showPressure(state.engineRpm);
-        }
-    }
-    state.flow = getNewFlow(state.flow);
-
-    presEye = presHydrant - supplyLineFricLoss(state.flow);
-    presOutlet = presEye + boost(state.engineRpm, state.flow);
-
-    active.combGauge.showPressure(presEye);
-    active.outGauge.showPressure(presOutlet);
-    //TEMP!!!active.fmRightBack.set(state.flow);
-
-};
-*/
 
 var updatePanel = function () {
     var i;
