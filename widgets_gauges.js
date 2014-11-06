@@ -213,7 +213,7 @@ widgets.gauges.highPressure = function (settings) {
     return {
         showPressure: function (p) {
             var a;
-            if (p < 0) {
+            if (p < 0 || isNaN(p)) {
                 a = -135; // bottom out
             } else if (p > 4000) {
                 a = 135;  // 100kPa in 20deg
@@ -270,7 +270,7 @@ widgets.gauges.outlet = function (settings) {
     return {
         showPressure: function (p) {
             var a;
-            if (p < 0) {
+            if (p < 0 || isNaN(p)) {
                 a = -135; // bottom out
             } else if (p > 2500) {
                 a = 135;  // 100kPa in 20deg
@@ -324,7 +324,7 @@ widgets.gauges.engineRevs = function (settings) {
     return {
         showPressure: function (rpm) {
             var a;
-            if (rpm < 0) {
+            if (rpm < 0 || isNaN(rpm)) {
                 a = -135; // bottom out
             } else if (rpm > 5000) {
                 a = 135;  // 100rpm in 20deg
@@ -407,7 +407,7 @@ widgets.gauges.compound = function (settings) {
     return {
         showPressure: function (p) {
             var a;
-            if (p < -100) {
+            if (p < -100 || isNaN(p)) {
                 a = -140;
             } else if (p < 0) {
                 a = p * 1.4; // 100kPa in 140deg
