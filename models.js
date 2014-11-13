@@ -1,18 +1,5 @@
 "use strict";
 
-////TEMP!!!
-///// squareroot function
-//var sqrt = function(x) {
-//    return Math.pow(x, 0.5);
-//}
-//
-//
-///// square function
-//var sq = function(x) {
-//    return x * x;
-//}
-////TEMP!!!
-
 
 var modelComponents = {
     gaam: {
@@ -45,8 +32,11 @@ var modelComponents = {
         }
     },
 
-    // midWayPresDrop in kPa
-    // forFlow in l/min
+    // Valves are modelled as variable resistance ranging from zero to infinite.  
+    // midWayPresDrop is in kPa
+    // forFlow is in l/min
+    //
+    // Opening is in the range 0.0 (closed) to 1.0 (fully open).
     valve: function (midWayPresDrop, forFlow) {
         var priv = {
             opening: 0.0,
@@ -55,7 +45,7 @@ var modelComponents = {
                 if (priv.opening == 0.0) {
                     return Number.POSITIVE_INFINITY
                 } else {
-                    return priv.halfwayResistance * (1.0 /priv.opening - 1.0);
+                    return priv.halfwayResistance * (1.0 / priv.opening - 1.0);
                 }
             },
         };
@@ -67,7 +57,7 @@ var modelComponents = {
             },
 
             flowRate: function (presIn, presOut) {
-                return sq((presIn - presOut) / resistance());
+                return sqrt((presIn - presOut) / priv.resistance());
             },
 
             set: function (opening) {
