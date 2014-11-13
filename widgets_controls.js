@@ -197,19 +197,23 @@ widgets.controls.toggleSwitch = function (settings) {
             width: settings.width,
             halfWidth: settings.width / 2,
             callback: settings.callback,
-            on: false,
-            clickFunc: null
+            on: settings.initial || false,
+            clickFunc: null,
+            setFunc: null
         },
         i, line, span;
-
-    priv.clickFunc = function (evt) {
-        if (priv.on) {
-            priv.on = false;
-            svg.setAttrs(priv.tog, {y2: priv.cy - priv.width});
-        } else {
-            priv.on = true;
+        
+    priv.setFunc = function (on) {
+        if (on) {
             svg.setAttrs(priv.tog, {y2: priv.cy + priv.width});
+        } else {
+            svg.setAttrs(priv.tog, {y2: priv.cy - priv.width});
         }
+    };
+    
+    priv.clickFunc = function (evt) {
+        priv.on = !priv.on;
+        priv.setFunc(priv.on);
         if (priv.callback) {
             priv.callback(priv.on);
         }
@@ -236,12 +240,12 @@ widgets.controls.toggleSwitch = function (settings) {
         x1: priv.cx,
         x2: priv.cx,
         y1: priv.cy,
-        y2: priv.cy - priv.width,
+        y2: priv.cy,
         style: "stroke-linecap: round; stroke: black; stroke-width: " + priv.halfWidth.toString()
     });
 
     priv.tog.addEventListener("click", priv.clickFunc, false);
-
+    priv.setFunc(priv.on);
     return {
         isOn: function () {
             return priv.on;
