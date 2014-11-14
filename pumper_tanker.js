@@ -21,20 +21,29 @@ var setAttrs = function (element, atts) {
     }
 };
 
+var logStuff = [];
+
+var logger = function (a) {
+    var i;
+    logStuff += '<tr>';
+    for (i in a) {
+        logStuff += '<td>' + a[i] + '</td>';
+    }
+    logStuff += '</tr>';
+};
+
+//TEMP!!! 
+var showLog = function () {
+    daveThing('compDuration', '<table>' + logStuff + '</table>');
+    //TEMP!!! logStuff = '';
+};
+
+
+
 
 var handleException = function (ex) {
     var
-        msg = "EX ",
-        i;
-    if (typeof ex === 'string') {
-        msg += ex;
-    } else {
-        for (i in ex) {
-            if (typeof ex[i] !== 'function') {
-                msg += i + ":" + ex[i] + "\n";
-            }
-        }
-    }
+        msg = "EX " + typeof ex + ' "' + ex.message + '" ' + ex.fileName + ':' + ex.lineNumber;
     alert(msg);
 };
 
@@ -128,7 +137,7 @@ var model = (function () {
         modelComponents.hose.fricLoss.curry(modelComponents.hose.resistance.h65, 3, 1)
     ];
 
-
+    //TEMP!!! 
     boost = modelComponents.gaam.mk450.normalPressureBoost;
     //TEMP!!! branch = [
     //TEMP!!!     modelComponents.branch.protek366(),
@@ -140,7 +149,7 @@ var model = (function () {
     // 5 values, 4 outlets and recirc
     outValve = [];
     for (i = 0; i < 5; i += 1) {
-        outValve[i] = modelComponents.valve(500, 1000);
+        outValve[i] = modelComponents.valve(500, 500);
     }
 
     al = [];
@@ -206,21 +215,34 @@ var model = (function () {
                 }
                 break;
             }
-                //TEMP!!! active.revGauge.showPressure(state.engineRpm);
         }
     };
 
+    // Called once each tick.
+    //
+    //
     hydraulicTick = function () {
         var
             outlet,
-            total = 0.0,  //TEMP!!!
-            fromTank = false;  //TEMP!!!
-            // totalFlow = 0.0;  // kL/min
-
-        pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(flow.total);
+            total = 0.0;
+            
+        if (tankOutOpen) {
+            
+            pres.pumpEye = 5 - 25e-6 * sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
+            
+        } else {    
+            
+            if (flow.total > hydrantParams.maxFlow) {
+                // hydrant line collapsing
+                flow.total = hydrantParams.maxFlow;
+                pres.pumpEye = 0.0;
+            } else {
+                pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(flow.total);
+            }
+        } 
 
         pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
-
+        
         for (outlet = 0; outlet < 5; outlet += 1) {
             if (outValve[outlet].closed()) {
                 flow.outlet[outlet] = 0.0;
@@ -230,21 +252,27 @@ var model = (function () {
                     flow.outlet[outlet] = al[outlet].getFlow(pres.pumpOut);
                 } else {
                     // tank fill
-                    flow.outlet[outlet] = outValve[outlet].flowRate(pres.pumpOut, 10);  //TEMP!!!
+                    flow.outlet[outlet] = outValve[outlet].flowRate(pres.pumpOut, 10);  //TEMP!!! magic number
                     tank.fill(flow.outlet[outlet] / 600);
                 }
             }
+
             total += flow.outlet[outlet];
         }
+        
         flow.total = (flow.total + total) / 2;
-
+        
         if (isNaN(flow.total)) {
-            flow.total = 0
+            //TEMP!!! 
+            flow.total = 0;
         }
 
-        if (fromTank) { //TEMP!!! disabled
+        if (tankOutOpen) { 
             tank.draw(flow.total / 600);
-        }
+        } 
+
+        logger([flow.outlet[0], flow.outlet[4], pres.pumpEye, pres.pumpOut, tank.getWater()]);
+            
 
     };
 
@@ -263,7 +291,7 @@ var model = (function () {
         setOutValve: function (index, value) {
             outValve[index].set(value);
             temp = outValve[index].resistance() + 1/650;    //TEMP!!!
-            daveThing('compDuration', temp);
+            //TEMP!!! daveThing('compDuration', temp);
             al[index].setHoseResistance(temp);
         },
 
@@ -315,7 +343,6 @@ var model = (function () {
 
                 engineTick();
                 hydraulicTick();
-                //TEMP!!! updatePanel();
                 daveThing('tankLevel', tank.getWater());
                 daveThing('totalFlow', flow.total);
                 daveThing('pumpPresOut', pres.pumpOut);
@@ -402,7 +429,7 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
             increaseRevs: widgets.controls.pushButton({parent: de, cx: 775, cy: 450, width: 40, text: ["INC."], callback: model.revUp}),
             //inLeft: widgets.controls.outletValve({parent: de, cx: 400, yTop: 650, yBot: 750, width: 40}),
             //inRight: widgets.controls.outletValve({parent: de, cx: 950, yTop: 650, yBot: 750, width: 40}),
-            tankIso: widgets.controls.toggleSwitch({parent: de, cx: 1150, cy: 180, width: 20, text: ["WATER TANK", "ISO VALVE"], callback: model.tankIso}),
+            tankIso: widgets.controls.toggleSwitch({parent: de, cx: 1150, cy: 180, width: 20, text: ["WATER TANK", "ISO VALVE"], callback: model.tankIso, initial: true}),
             waterLevel: widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"})
         };
 
@@ -412,7 +439,7 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
         active.outValue = [];
         active.outFlow = [];
         for (i = 0; i < 5; i += 1) {
-            x = (i < 2) ? (300 + i * 200) : (450 + i * 200);
+            x = (i < 2) ? (250 + i * 200) : (450 + i * 200);
             sideways = (i < 2) ? (i - 2) * 10 : (i - 1) * 10;
             active.outValue[i] = widgets.controls.outletValve({
                 yTop: 350,
@@ -429,7 +456,7 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
         active.inValue = [];
         for (i = 0; i < 3; i += 1) {
-            x = 400 + i * 275;
+            x = 350 + i * 290;
             sideways = -15 + i * 15;
             active.inValue[i] = widgets.controls.outletValve({
                 yTop: 600,
@@ -468,6 +495,8 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
         debug.branch = widgets.controls.toggleSwitch({cx: 1600, cy: 450, width: 20, text: ["BRANCH2"], callback: model.waterOn.curry(2)});
         debug.branch = widgets.controls.toggleSwitch({cx: 1600, cy: 500, width: 20, text: ["BRANCH3"], callback: model.waterOn.curry(3)});
 
+        widgets.controls.pushButton({cx: 1600, cy: 550, width: 40, text: ["LOG"], callback: showLog});
+        
         debug.timerInt = timerInterface(jqSvg, 1600, 30, 50, heart);
         jqSvg.text(1510, 120, "hydrant line lengths");
         debug.hydrantLineLength = numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 1, function(x){model.setHydrantLengths(x);});
@@ -475,6 +504,8 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
         debug.hydrantPressure = numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 500, function(x){model.setHydrantPres(x);});
         jqSvg.text(1510, 190, "hydrant line rise [m]");
         debug.hydrantLineRise = numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, function(x){model.setHydrantLineRise(x);});
+        
+        logger(['o0', 'o4', 'pres.pumpEye', 'pres.pumpOut', 'tank']);
 
         // debug.step = widgets.controls.toggleSwitch({cx: 1600, cy: 600, width: 20, text: ["STEP"]});
         // widgets.controls.pushButton({cx: 1600, cy: 650, width: 40, text: ["STEP"], callback: function () {
@@ -497,7 +528,6 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
     }
     catch (ex) {
-        alert("big");  //TEMP!!!
         handleException(ex);
     }
 };
