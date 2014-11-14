@@ -76,7 +76,8 @@ mySvg.createText = function (settings) {
         span = mySvg.document.createElementNS(mySvg.ns, "tspan");
         span.appendChild(line);
         mySvg.setAttrs(span, {
-            dy: i ? "1em" : "0em"
+            dy: i ? "1em" : "0em",
+            x: settings.cx
         });
         text.appendChild(span);
     }

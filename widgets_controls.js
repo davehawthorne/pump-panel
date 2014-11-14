@@ -221,7 +221,7 @@ widgets.controls.toggleSwitch = function (settings) {
 
     priv.text = svg.createText({
         cx: priv.cx,
-        yTop: priv.cy + priv.width,
+        yTop: priv.cy + priv.width * 2,
         text: settings.text
     });
 
