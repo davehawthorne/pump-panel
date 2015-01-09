@@ -3,8 +3,8 @@
 
 //var widgets;
 
-if (!widgets) {
-    widgets = {};
+if (typeof widgets === "undefined") {
+    var widgets = {};
 }
 
 if (!widgets.gauges) {
@@ -18,14 +18,16 @@ var
 
 /// used to generate the graduations on a gauge dial, these are built as just
 /// three paths, each of a different thickness.
-widgets.dialGraduations = function(cx, cy, r) {
+widgets.dialGraduations = function (cx, cy, r) {
     var
         thinLine = '',
         midLine = '',
         thickLine = '',
-        lineCoords = function(angle, r1, r2) {
+        lineCoords = function (angle, r1, r2) {
             var
-                trim = function(x) { return Math.round(1000 * x)/1000;},
+                trim = function (x) {
+                    return Math.round(1000 * x) / 1000;
+                },
                 theta = (angle + 90) * Math.PI / 180,
                 x = Math.cos(theta),
                 y = Math.sin(theta),
@@ -38,37 +40,37 @@ widgets.dialGraduations = function(cx, cy, r) {
         };
 
     return {
-        minor: function(angle) {
+        minor: function (angle) {
             thinLine += lineCoords(angle, r * 0.85, r * 0.75);
         },
 
-        mid: function(angle) {
+        mid: function (angle) {
             thinLine += lineCoords(angle, r * 0.85, r * 0.70);
         },
 
-        major: function(angle) {
+        major: function (angle) {
             thinLine += lineCoords(angle, r * 0.85, r * 0.75);
             midLine += lineCoords(angle, r * 0.75, r * 0.65);
         },
 
-        zero: function(angle) {
+        zero: function (angle) {
             thinLine += lineCoords(angle, r * 0.85, r * 0.75);
             thickLine += lineCoords(angle, r * 0.75, r * 0.70);
             midLine += lineCoords(angle, r * 0.70, r * 0.65);
         },
 
-        draw: function(svg, color) {
+        draw: function (svg, color) {
             return [
                 svg.create("path", {stroke: color, "stroke-width": 1, d: thinLine}),
                 svg.create("path", {stroke: color, "stroke-width": 2, d: midLine}),
                 svg.create("path", {stroke: color, "stroke-width": 4, d: thickLine})
             ];
         }
-    }
-}
+    };
+};
 
 
-widgets.placeText = function(settings, textArray) {
+widgets.placeText = function (settings, textArray) {
     var
         i,
         t,
@@ -87,7 +89,7 @@ widgets.placeText = function(settings, textArray) {
             }
         );
     }
-}
+};
 
 
 /// Creates the bevel, face and needle for a gauge.
@@ -191,6 +193,7 @@ widgets.gauges.highPressure = function (settings) {
         case 10:
             grad.major(a);
             i = 0;
+            break;
         default:
             grad.minor(a);
         }
@@ -241,7 +244,7 @@ widgets.gauges.outlet = function (settings) {
     for (a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
     {
 
-        if (i==10) {
+        if (i === 10) {
             grad.major(a);
             i = 0;
         } else if (i & 1) {
@@ -295,10 +298,10 @@ widgets.gauges.engineRevs = function (settings) {
     for (a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
     {
 
-        if (i == 10) {
+        if (i === 10) {
             grad.major(a);
             i = 0;
-        } else if (i == 5) {
+        } else if (i === 5) {
             grad.mid(a);
         } else {
             grad.minor(a);
@@ -313,11 +316,11 @@ widgets.gauges.engineRevs = function (settings) {
         settings,
         [
             [-0.5, 0.5, '0'],
-            [-0.65, -0.1, '500'],
-            [-0.4, -0.5, '1000'],
-            [0.1, -0.5, '1500'],
-            [0.35, -0.1, '2000'],
-            [0.15, 0.5, '2500']
+            [-0.65, -0.1, '1000'],
+            [-0.4, -0.5, '2000'],
+            [0.1, -0.5, '3000'],
+            [0.35, -0.1, '4000'],
+            [0.15, 0.5, '5000']
         ]
     );
 
@@ -361,6 +364,7 @@ widgets.gauges.compound = function (settings) {
         case 2:
             redGrad.mid(a);
             i++;
+            break;
         default:
             redGrad.minor(a);
             i = 0;
@@ -369,12 +373,11 @@ widgets.gauges.compound = function (settings) {
 
     blackGrad.zero(180);
 
-
     blackGrad.major(200);
     blackGrad.minor(206);
     blackGrad.minor(212);
     for (a = 218, i = 0; a <= 315; a += 8) {
-        if (i == 0) {
+        if (i === 0) {
             blackGrad.major(a);
         } else {
             blackGrad.minor(a);
@@ -382,8 +385,8 @@ widgets.gauges.compound = function (settings) {
         i = (i + 1) & 3;
     }
 
-    redGrad.draw(svg,'red');
-    blackGrad.draw(svg,'black');
+    redGrad.draw(svg, 'red');
+    blackGrad.draw(svg, 'black');
 
 
 
@@ -400,7 +403,7 @@ widgets.gauges.compound = function (settings) {
             [0.2, -0.4, "400"],
             [0.4, -0.15, "800"],
             [0.3, 0.15, "1200"],
-            [0.2, 0.45, "1600"],
+            [0.2, 0.45, "1600"]
         ]
     );
 

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Gauge Test</title>
+
+        <script type="text/javascript" src="3rdParty/jquery.js"></script>
+        <script type="text/ecmascript" src="3rdParty/jquery.svg.js"></script>
+
+        <script type="text/ecmascript" src="utils.js"></script>
+        <script type="text/ecmascript" src="svg.js"></script>
+        <script type="text/ecmascript" src="widgets_gauges.js"></script>
+        <script type="text/ecmascript" src="widgets_controls.js"></script>
+        <script>
+
+            var gauges, flow;  //TEMP!!! size = 7, bob, aaa = 0, lev;
+            
+            function sid(on) {
+                var i;
+                for (i=0;i<size * size;i++) {
+                    bob[i].set((aaa + i)% 5);
+                    }
+                    aaa+=1;
+            };
+
+            function all(val) {
+                var i;
+                for (i in gauges) { // ['outGauge', 'combGauge', 'hpGauge', 'revGauge']) { 
+                    //alert(i);
+                    gauges[i].showPressure(val*1000);
+                }
+                flow.set(val * 1000);
+            };
+            
+            function test(x) {
+                
+                var
+                    de = x.documentElement;
+
+                svg.setDocument(x.root());
+                svg.create("rect", {x: 0, y: 10, width: 800, height: 600, fill: "#202090"});
+
+                gauges = {
+                    outGauge: widgets.gauges.outlet({parent: de, cx: 200, cy: 200, size: 150}),
+                    combGauge: widgets.gauges.compound({parent: de, cx: 400, cy: 200, size: 150}),
+                    hpGauge: widgets.gauges.highPressure({parent: de, cx: 200, cy: 400, size: 150}),
+                    revGauge: widgets.gauges.engineRevs({parent: de, cx: 400, cy: 400, size: 150})
+                };
+                
+                flow = widgets.gauges.flow({parent: de, cx: 300, cy: 300, width: 70});
+                
+                widgets.controls.outletValve({
+                    yTop: 200,
+                    yBot: 400,
+                    knobWidth: 80,
+                    width: 100,
+                    height: 300,
+                    callback: all,
+                    cx: 600,
+                    sideways: 20
+                });                
+            };  
+            
+            
+            $(function() {
+                $('#svg1').svg({onLoad: test, settings:{ width: 800, height: 600} });
+            });
+            
+            
+
+        </script>
+
+    </head>
+    <body>
+    <h1>Gauge Test</h1>
+        <svg id="svg1"></svg>
+</html>

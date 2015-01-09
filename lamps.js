@@ -11,10 +11,23 @@ if (!widgets.gauges) {
 }
 
 
-widgets.gauges.lampFill = function (settings) {
+// This method is only called by widgets.gauges.lamp()
+//
+// The glow of the lamps when turned on and the gradients of lamp bevels and 
+// lamp surfaces.
+// rgb is an RGB integer array (3 values from 0 to 255)
+//
+// The light source is taken to be to the upper left of the panel.
+// On first call two linear gradients are created for the silver coloured bevel surrounding the lamps.
+// The outer one is lighter on the top left, the inner one is lighter on the bottom right.
+//
+// Each unilluminated lamp has a radial colour gradient which mimics the external light reflected off
+// its round surface.  One such gradient is generated for each lamp colour and its name is generated
+// from the RGB values.
+// Similarly a guassian blur is created for each lamp colour.  This is used to signify the lamp is on.
+widgets.gauges.lampFill = function (rgb, id) {
     var
         lampGradCommon = {cx: 0.4, cy: 0.4, fx: 0.25, fy: 0.25, r: 0.25, c1: 'white'},
-        rgb = settings.colour,
         dullColour = [Math.round(rgb[0] / 2), Math.round(rgb[1] / 2), Math.round(rgb[2] / 2)],
         glow,
         globe,
@@ -27,29 +40,43 @@ widgets.gauges.lampFill = function (settings) {
 
     }
 
-    if (!widgets.gauges.fills[settings.id]) {
+    if (!widgets.gauges.fills[id]) {
         globe = svg.radGrad(utils.shallowMerge(lampGradCommon, {
             c2: svg.rgb2str(dullColour),
-            id: 'globe' + settings.id
+            id: 'globe' + id
         }));
-        glow = svg.create('filter', {id: 'glow' + settings.id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
+        glow = svg.create('filter', {id: 'glow' + id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
         matrixStr =
-            "0 0 0 " + rgb[0].toString() + " 0 " +
-            "0 0 0 " + rgb[1].toString() + " 0 " +
-            "0 0 0 " + rgb[2].toString() + " 0 " +
+            "0 0 0 " + (rgb[0] / 255).toString() + " 0 " +
+            "0 0 0 " + (rgb[1] / 255).toString() + " 0 " +
+            "0 0 0 " + (rgb[2] / 255).toString() + " 0 " +
             "0 0 0 1 0";
         svg.create('feColorMatrix', {parent: glow, type: "matrix", values: matrixStr});
         svg.create('feGaussianBlur', {parent: glow, result: "coloredBlur", stdDeviation: 5});
-        widgets.gauges.fills[settings.id] = {globe: globe, glow: glow};
+        widgets.gauges.fills[id] = {globe: globe, glow: glow};
     }
 };
 
 
+// The logic for a single lamp.  Lamp has a bezel.
+//
+// There's only one method called: set().
+//
+// The parameters passed to the constructor are:
+// - cx, cy: the location of the lamp centre
+// - rBevel, rGlobe: the radii of the components, bevel should be bigger than globe
+// - colour: a three value array containing the RGB value of the illuminated globe 
+//   (extingished lamp has these values halved.)
+//
+// The glow of the lamp, the shine of the bevel and the shine of the unlit lamp
+// is acheived with the lampFill method.  
 widgets.gauges.lamp = function (settings) {
-    var priv, rgb;
-    priv = utils.copyAttribs(settings, ['cx', 'cy', 'rBevel', 'rGlobe', 'colour', 'colourId']);
+    var 
+        priv = utils.copyAttribs(settings, ['cx', 'cy', 'rBevel', 'rGlobe', 'colour']),
+        rgb = priv.colour,
+        id = 'R' + rgb[0] + 'G' + rgb[1] + 'B' + rgb[2];
 
-    widgets.gauges.lampFill({colour: priv.colour, id: priv.colourId});
+    widgets.gauges.lampFill(rgb, id);
 
     priv.convexBevel = svg.create("circle", {
         parent: settings.parent,
@@ -60,7 +87,6 @@ widgets.gauges.lamp = function (settings) {
         fill: "url(#convexLampBevelFill)"
     });
     priv.concaveBevel = svg.create("circle", {
-        //parent: priv.convexBevel,
         cx: priv.cx,
         cy: priv.cy,
         r: (priv.rBevel + priv.rGlobe) / 2,
@@ -68,20 +94,18 @@ widgets.gauges.lamp = function (settings) {
         fill: "url(#concaveLampBevelFill)"
     });
     priv.bulb = svg.create("circle", {
-        //parent: priv.convexBevel,
         cx: priv.cx,
         cy: priv.cy,
         r: priv.rGlobe,
         stroke: "none",
-        fill: "url(#globe" + priv.colourId + ")"
+        fill: "url(#globe" + id + ")"
     });
     priv.glow = svg.create("circle", {
-        //parent: priv.convexBevel,
         cx: priv.cx,
         cy: priv.cy,
         r: priv.rBevel,
         stroke: "none",
-        filter: "url(#glow" + priv.colourId + ")",
+        filter: "url(#glow" + id + ")",
         visibility: 'hidden'
     });
     return {
@@ -90,6 +114,7 @@ widgets.gauges.lamp = function (settings) {
         }
     };
 };
+
 
 widgets.gauges.levelIndicator = function (settings) {
     var
