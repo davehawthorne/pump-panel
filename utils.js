@@ -79,6 +79,15 @@ utils.copyAttribs = function (orig, attrList) {
 
 
 
+/// Return a function that rounds a value to the specified number of digits
+/// after the decimal point.
+utils.buildRounder = function(decimals) {
+    var factor = Math.pow(10, decimals);
+    return function(val) {
+        return Math.round(factor * val) / factor;
+    };
+};
+
 
 
 /// Augments the jquery svg library
@@ -136,32 +145,32 @@ var spinnerBase = function(svg, x, y, w, h, init, incFn, decFn, callback) {
 
 }
 
-var numSpinner = function(svg, x, y, w, h, min, max, step, initial, callback) {
+
+var numSpinner = function(svg, x, y, w, h, min, max, step, digits, initial, callback) {
     var
         val = initial,
         inc = function() {
-            var newVal = val + step;
-            if (newVal > max) {
+            if (val >= max) {
                 return null;
             }
-            val = newVal;
-            return val;
+            val = Math.min(max, val + step);
+            return val.toFixed(digits);
         },
         dec = function() {
-            var newVal = val - step;
-            if (newVal < min) {
+            if (val <= min) {
                 return null;
             }
-            val = newVal;
-            return val;
+            val = Math.max(min, val - step);
+            return val.toFixed(digits);
         },
-        base = spinnerBase(svg, x, y, w, h, val, inc, dec, callback);
+        base = spinnerBase(svg, x, y, w, h, val.toFixed(digits), inc, dec, callback);
     return {
         value : function() {
             return val;
         }
     }
 }
+
 
 var listSpinner = function(svg, x, y, w, h, vals, callback) {
     var
@@ -340,11 +349,22 @@ var timerInterface = function(svg, x, y, h, heart)
 /// squareroot function
 var sqrt = function(x) {
     return Math.pow(x, 0.5);
-}
+};
 
 
 /// square function
 var sq = function(x) {
     return x * x;
-}
+};
+
+
+/// Helper function
+var setAttrs = function (element, atts) {
+    var atName;
+    for (atName in atts) {
+        if (typeof atts[atName] !== 'function') {
+            element.setAttribute(atName, atts[atName]);
+        }
+    }
+};
 

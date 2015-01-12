@@ -14,7 +14,7 @@
         <script>
 
             var size = 7, bob, aaa = 0, lev;
-            
+
             function sid(on) {
                 var i;
                 for (i=0;i<size * size;i++) {
@@ -28,12 +28,12 @@
                     bob[i].set(on);
                 }
             };
-            
+
             function test(x) {
                 var i, step=255/size;
-                
+
                 svg.setDocument(x.root());
-                svg.create("rect", {x: 0, y: 10, width: 800, height: 600, fill: "#202090"});
+                svg.create("rect", {x: 0, y: 10, width: 1000, height: 600, fill: "#202090"});
                 widgets.controls.toggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
                 widgets.controls.toggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
                 bob = []
@@ -44,24 +44,24 @@
                             cy: 100 + 60*j,
                             rBevel: 20+i,
                             rGlobe: 13+j,
-                            colour: [i * step, j * step, 250 - i * step/2 - j *step/2]   
-                        });  
+                            colour: [i * step, j * step, 250 - i * step/2 - j *step/2]
+                        });
                     }
                 }
-                
+
                 lev = widgets.gauges.levelIndicator({
                     cx: 600, yTop: 50, lampDist: 50, title: "WATER"
                 });
-                
-                numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.05, 0, function(a){lev.set(a);});
-                
-            };  
-            
-            
+
+                numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function(a){lev.set(a);});
+
+            };
+
+
             $(function() {
-                $('#svg1').svg({onLoad: test, settings:{ width: 800, height: 600} });
+                $('#svg1').svg({onLoad: test, settings:{ width: 1000, height: 600} });
             });
-            
+
         </script>
 
     </head>

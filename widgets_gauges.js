@@ -25,9 +25,7 @@ widgets.dialGraduations = function (cx, cy, r) {
         thickLine = '',
         lineCoords = function (angle, r1, r2) {
             var
-                trim = function (x) {
-                    return Math.round(1000 * x) / 1000;
-                },
+                trim = utils.buildRounder(3),
                 theta = (angle + 90) * Math.PI / 180,
                 x = Math.cos(theta),
                 y = Math.sin(theta),

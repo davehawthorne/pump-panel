@@ -11,15 +11,6 @@ if (!widgets) {
 ///   Pressures given in kPa, flows in l/min
 
 
-/// Helper function
-var setAttrs = function (element, atts) {
-    var atName;
-    for (atName in atts) {
-        if (typeof atts[atName] !== 'function') {
-            element.setAttribute(atName, atts[atName]);
-        }
-    }
-};
 
 var logStuff = [];
 
@@ -32,7 +23,7 @@ var logger = function (a) {
     logStuff += '</tr>';
 };
 
-//TEMP!!! 
+//TEMP!!!
 var showLog = function () {
     daveThing('compDuration', '<table>' + logStuff + '</table>');
     //TEMP!!! logStuff = '';
@@ -137,7 +128,7 @@ var model = (function () {
         modelComponents.hose.fricLoss.curry(modelComponents.hose.resistance.h65, 3, 1)
     ];
 
-    //TEMP!!! 
+    //TEMP!!!
     boost = modelComponents.gaam.mk450.normalPressureBoost;
     //TEMP!!! branch = [
     //TEMP!!!     modelComponents.branch.protek366(),
@@ -225,13 +216,13 @@ var model = (function () {
         var
             outlet,
             total = 0.0;
-            
+
         if (tankOutOpen) {
-            
+
             pres.pumpEye = 5 - 25e-6 * sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
-            
-        } else {    
-            
+
+        } else {
+
             if (flow.total > hydrantParams.maxFlow) {
                 // hydrant line collapsing
                 flow.total = hydrantParams.maxFlow;
@@ -239,10 +230,10 @@ var model = (function () {
             } else {
                 pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(flow.total);
             }
-        } 
+        }
 
         pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
-        
+
         for (outlet = 0; outlet < 5; outlet += 1) {
             if (outValve[outlet].closed()) {
                 flow.outlet[outlet] = 0.0;
@@ -259,20 +250,20 @@ var model = (function () {
 
             total += flow.outlet[outlet];
         }
-        
+
         flow.total = (flow.total + total) / 2;
-        
+
         if (isNaN(flow.total)) {
-            //TEMP!!! 
+            //TEMP!!!
             flow.total = 0;
         }
 
-        if (tankOutOpen) { 
+        if (tankOutOpen) {
             tank.draw(flow.total / 600);
-        } 
+        }
 
         logger([flow.outlet[0], flow.outlet[4], pres.pumpEye, pres.pumpOut, tank.getWater()]);
-            
+
 
     };
 
@@ -496,15 +487,15 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
         debug.branch = widgets.controls.toggleSwitch({cx: 1600, cy: 500, width: 20, text: ["BRANCH3"], callback: model.waterOn.curry(3)});
 
         widgets.controls.pushButton({cx: 1600, cy: 550, width: 40, text: ["LOG"], callback: showLog});
-        
+
         debug.timerInt = timerInterface(jqSvg, 1600, 30, 50, heart);
         jqSvg.text(1510, 120, "hydrant line lengths");
-        debug.hydrantLineLength = numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 1, function(x){model.setHydrantLengths(x);});
+        debug.hydrantLineLength = numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 0, 1, function(x){model.setHydrantLengths(x);});
         jqSvg.text(1510, 155, "hydrant pressure [kPa]");
-        debug.hydrantPressure = numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 500, function(x){model.setHydrantPres(x);});
+        debug.hydrantPressure = numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 0, 500, function(x){model.setHydrantPres(x);});
         jqSvg.text(1510, 190, "hydrant line rise [m]");
-        debug.hydrantLineRise = numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, function(x){model.setHydrantLineRise(x);});
-        
+        debug.hydrantLineRise = numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, 0, function(x){model.setHydrantLineRise(x);});
+
         logger(['o0', 'o4', 'pres.pumpEye', 'pres.pumpOut', 'tank']);
 
         // debug.step = widgets.controls.toggleSwitch({cx: 1600, cy: 600, width: 20, text: ["STEP"]});
