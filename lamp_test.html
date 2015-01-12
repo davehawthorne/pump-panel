@@ -4,68 +4,82 @@
         <meta charset="utf-8">
         <title>Lamp Test</title>
 
-        <script type="text/javascript" src="3rdParty/jquery.js"></script>
-        <script type="text/ecmascript" src="3rdParty/jquery.svg.js"></script>
+        <script src="3rdParty/jquery.js"></script>
+        <script src="3rdParty/jquery.svg.js"></script>
 
-        <script type="text/ecmascript" src="utils.js"></script>
-        <script type="text/ecmascript" src="svg.js"></script>
-        <script type="text/ecmascript" src="lamps.js"></script>
-        <script type="text/ecmascript" src="widgets_controls.js"></script>
+        <script src="utils.js"></script>
+        <script src="svg.js"></script>
+        <script src="lamps.js"></script>
+        <script src="widgets_controls.js"></script>
         <script>
+            "use strict";
 
-            var size = 7, bob, aaa = 0, lev;
+            var
+                size = 7,
+                bob = [],
+                aaa = 0,
+                lev,
 
-            function sid(on) {
-                var i;
-                for (i=0;i<size * size;i++) {
-                    bob[i].set((aaa + i)% 5);
+                sid = function (on) {
+                    var i;
+                    for (i = 0; i < size * size; i += 1) {
+                        bob[i].set((aaa + i) % 5);
                     }
-                    aaa+=1;
-            };
+                    aaa += 1;
+                },
 
-            function all(on) {
-                for (i=0;i<size * size;i++) {
-                    bob[i].set(on);
-                }
-            };
-
-            function test(x) {
-                var i, step=255/size;
-
-                svg.setDocument(x.root());
-                svg.create("rect", {x: 0, y: 10, width: 1000, height: 600, fill: "#202090"});
-                widgets.controls.toggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
-                widgets.controls.toggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
-                bob = []
-                for (j=0;j<size;j++) {
-                    for (i=0;i<size;i++) {
-                        bob[i+j*size] = widgets.gauges.lamp({
-                            cx: 40 + 60*i,
-                            cy: 100 + 60*j,
-                            rBevel: 20+i,
-                            rGlobe: 13+j,
-                            colour: [i * step, j * step, 250 - i * step/2 - j *step/2]
-                        });
+                all = function (on) {
+                    var i;
+                    for (i = 0; i < size * size; i += 1) {
+                        bob[i].set(on);
                     }
-                }
+                },
 
-                lev = widgets.gauges.levelIndicator({
-                    cx: 600, yTop: 50, lampDist: 50, title: "WATER"
+                test = function (x) {
+                    var i, j, step = 255 / size;
+
+                    svg.setDocument(x.root());
+                    svg.create("rect", {x: 0, y: 10, width: 1000, height: 600, fill: "#202090"});
+                    widgets.controls.toggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
+                    widgets.controls.toggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
+                    for (j = 0; j < size; j += 1) {
+                        for (i = 0; i < size; i += 1) {
+                            bob[i + j * size] = widgets.gauges.lamp({
+                                cx: 40 + 60 * i,
+                                cy: 100 + 60 * j,
+                                rBevel: 20 + i,
+                                rGlobe: 13 + j,
+                                colour: [i * step, j * step, 250 - i * step / 2 - j * step / 2]
+                            });
+                        }
+                    }
+
+                    lev = widgets.gauges.levelIndicator({
+                        cx: 600,
+                        yTop: 50,
+                        lampDist: 50,
+                        title: "WATER"
+                    });
+
+                    numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function (a) {
+                        lev.set(a);
+                    });
+
+                };
+
+
+            $(function () {
+                $('#svg1').svg({
+                    onLoad: test,
+                    settings: {width: 1000, height: 600}
                 });
-
-                numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function(a){lev.set(a);});
-
-            };
-
-
-            $(function() {
-                $('#svg1').svg({onLoad: test, settings:{ width: 1000, height: 600} });
             });
 
         </script>
 
     </head>
     <body>
-    <h1>Lamp Test</h1>
-        <svg id="svg1"></svg>
+        <h1>Lamp Test</h1>
+        <div id="svg1"></div>
+    </body>
 </html>

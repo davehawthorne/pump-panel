@@ -81,9 +81,9 @@ utils.copyAttribs = function (orig, attrList) {
 
 /// Return a function that rounds a value to the specified number of digits
 /// after the decimal point.
-utils.buildRounder = function(decimals) {
+utils.buildRounder = function (decimals) {
     var factor = Math.pow(10, decimals);
-    return function(val) {
+    return function (val) {
         return Math.round(factor * val) / factor;
     };
 };
@@ -91,7 +91,7 @@ utils.buildRounder = function(decimals) {
 
 
 /// Augments the jquery svg library
-var changeableText = function(svg, parent, initial) {
+var changeableText = function (svg, parent, initial) {
     var
         textNode = svg.root().ownerDocument.createTextNode(initial),
         text = svg.root().ownerDocument.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -101,14 +101,14 @@ var changeableText = function(svg, parent, initial) {
 
     return {
         text : text,
-        change : function(value) {
+        change : function (value) {
             textNode.nodeValue = value;
         }
-    }
-}
+    };
+};
 
 
-var spinnerBase = function(svg, x, y, w, h, init, incFn, decFn, callback) {
+var spinnerBase = function (svg, x, y, w, h, init, incFn, decFn, callback) {
     var
         g = svg.group(),
         r = svg.rect(g, x, y, w, h),
@@ -116,47 +116,53 @@ var spinnerBase = function(svg, x, y, w, h, init, incFn, decFn, callback) {
         down = svg.polygon(g, [[x + h * 0.05, y + h * 0.55], [x + h * 0.5, y + h * 0.95], [x + h * 0.95, y + h * 0.55]]),
         val = init,
         text = changeableText(svg, g, val),
-        change = function(evt, val, key) {
+        change = function (evt, val, key) {
             evt.preventDefault();
             if (val === null) {
                 svg.change(text.text, {fill: 'red'});
             } else {
                 text.change(val);
-                callback && callback(val);
+                if (callback) {
+                    callback(val);
+                }
             }
             svg.change(key, {fill: 'red'});
         },
-        clear = function(evt) {
+        clear = function (evt) {
             svg.change(up, {fill: 'blue'});
             svg.change(down, {fill: 'blue'});
             svg.change(text.text, {fill: 'white'});
         };
 
-        up.addEventListener("mousedown", function(evt){change(evt,incFn(), up);}, false);
-        down.addEventListener("mousedown", function(evt){change(evt,decFn(), down);}, false);
-        up.addEventListener("mouseup", clear, false);
-        down.addEventListener("mouseup", clear, false);
-        up.addEventListener("mouseout", clear, false);
-        down.addEventListener("mouseout", clear, false);
+    up.addEventListener("mousedown", function (evt) {
+        change(evt, incFn(), up);
+    }, false);
+    down.addEventListener("mousedown", function (evt) {
+        change(evt, decFn(), down);
+    }, false);
+    up.addEventListener("mouseup", clear, false);
+    down.addEventListener("mouseup", clear, false);
+    up.addEventListener("mouseout", clear, false);
+    down.addEventListener("mouseout", clear, false);
 
-        clear();
+    clear();
 
-        svg.change(text.text, {x: x + h * 1.1, y: y + h * 0.8, fill: 'white', fontFamily: 'Verdana', fontSize: h * 0.8, /* textLength: w - (h * 1.2)/*, textAnchor: 'spacingAndGlyphs'*/});
+    svg.change(text.text, {x: x + h * 1.1, y: y + h * 0.8, fill: 'white', fontFamily: 'Verdana', fontSize: h * 0.8});
 
-}
+};
 
 
-var numSpinner = function(svg, x, y, w, h, min, max, step, digits, initial, callback) {
+var numSpinner = function (svg, x, y, w, h, min, max, step, digits, initial, callback) {
     var
         val = initial,
-        inc = function() {
+        inc = function () {
             if (val >= max) {
                 return null;
             }
             val = Math.min(max, val + step);
             return val.toFixed(digits);
         },
-        dec = function() {
+        dec = function () {
             if (val <= min) {
                 return null;
             }
@@ -164,40 +170,41 @@ var numSpinner = function(svg, x, y, w, h, min, max, step, digits, initial, call
             return val.toFixed(digits);
         },
         base = spinnerBase(svg, x, y, w, h, val.toFixed(digits), inc, dec, callback);
+
     return {
-        value : function() {
+        value : function () {
             return val;
         }
-    }
-}
+    };
+};
 
 
-var listSpinner = function(svg, x, y, w, h, vals, callback) {
+var listSpinner = function (svg, x, y, w, h, vals, callback) {
     var
         i = 0,
         max = vals.length - 1,
-        inc = function() {
+        inc = function () {
             i = (i < max) ? (i + 1) : 0;
             return vals[i];
         },
-        dec = function(val) {
+        dec = function (val) {
             i = (i > 0) ? (i - 1) : max;
             return vals[i];
         },
         base = spinnerBase(svg, x, y, w, h, vals[0], inc, dec, callback);
     return {
-        value : function() {
+        value : function () {
             return i;
         }
-    }
-}
+    };
+};
 
 
-var timerHeart = function(ticksPerSec) {
+var timerHeart = function (ticksPerSec) {
     var
         interval = 1000 / ticksPerSec,
         ticks = 0,
-        ticker,
+        ticker = null,
         callbacks = [],
         maxProcTime = 0,
         totProcTime = 0,
@@ -209,9 +216,9 @@ var timerHeart = function(ticksPerSec) {
                 procTime,
                 delta;
 
-            ticks++;
+            ticks += 1;
             start = new Date().getTime();
-            for (i=0; i<len; i++) {
+            for (i = 0; i < len; i += 1) {
                 callbacks[i]();
             }
             procTime = new Date().getTime() - start;
@@ -222,57 +229,51 @@ var timerHeart = function(ticksPerSec) {
         };
 
     return {
-        addCallback: function(fn) {
+        addCallback: function (fn) {
             callbacks.push(fn);
         },
-        start: function() {
+        start: function () {
             if (ticker) {
                 throw {name: 'bad state', message: 'ticker already started'};
             }
             ticker = setInterval(tickTask, interval);
         },
-        stop: function() {
+        stop: function () {
             if (!ticker) {
                 throw {name: 'bad state', message: 'ticker already stopped'};
             }
             clearInterval(ticker);
             ticker = null;
         },
-        step: function() {
+        step: function () {
             if (ticker) {
                 throw {name: 'bad state', message: 'ticker already running'};
             }
             tickTask();
         },
-        getInfo: function() {
+        getInfo: function () {
             return {
-                running: ticker != null,
+                running: ticker !== null,
                 elapsed: ticks / ticksPerSec,  // seconds
                 maxLoad: maxProcTime / interval,  // 0 - 1
                 aveLoad: ticks ? (totProcTime / (ticks * interval)) : 0  // 0 - 1
-            }
+            };
         }
     };
-}
+};
 
-// {
-// showTime: function(ticks) {
-// totalSecs = ticks / ticksPerSec;
-// mins =
-// secs = totalSecs % 60;
-// string = mins + ':' + secs
 
-var timerInterface = function(svg, x, y, h, heart)
+var timerInterface = function (svg, x, y, h, heart)
 {
     var
         g = svg.group({transform: "translate(" + x + "," + y + ")"}),
         fieldDisplays = [],
 
-        step = svg.circle(g, h*0.7, h*0.15, h * 0.15, {fill: 'blue', stroke: 'black'}),
+        step = svg.circle(g, h * 0.7, h * 0.15, h * 0.15, {fill: 'blue', stroke: 'black'}),
         control = svg.group(g),
-        play = svg.polygon(control, [[h*0.1, h*0.1], [h*0.9, h*0.5], [h*0.1, h*0.9]], {fill: 'green', stroke: 'black'}),
+        play = svg.polygon(control, [[h * 0.1, h * 0.1], [h * 0.9, h * 0.5], [h * 0.1, h * 0.9]], {fill: 'green', stroke: 'black'}),
         pause = svg.group(control, {fill: 'none', stroke: 'none'}),
-        pad2 = function(val) {
+        pad2 = function (val) {
             val = val.toString();
             while (val.length < 2) {
                 val = '0' + val;
@@ -287,7 +288,7 @@ var timerInterface = function(svg, x, y, h, heart)
             peak: 0
         },
         field,
-        toggle = function() {
+        toggle = function () {
             if (heart.getInfo().running) {
                 heart.stop();
                 svg.change(play, {fill: 'green', stroke: 'black'});
@@ -300,7 +301,7 @@ var timerInterface = function(svg, x, y, h, heart)
                 svg.change(step, {fill: 'none', stroke: 'none'});
             }
         },
-        update = function() {
+        update = function () {
             var
                 field,
                 info = heart.getInfo(),
@@ -313,18 +314,18 @@ var timerInterface = function(svg, x, y, h, heart)
                 };
 
             for (field in state) {
-                if (state[field] != newState[field]) {
+                if (state[field] !== newState[field]) {
                     fieldDisplays[field].change(pad2(newState[field]));
                 }
             }
             state = newState;
         };
 
-    svg.rect(pause, h*0.1, h*0.15, h*0.8, h*0.3);
-    svg.rect(pause, h*0.1, h*0.55, h*0.8, h*0.3);
-    svg.circle(g, h*2.1, h*0.3, h * 0.05, {fill: 'grey'});
-    svg.circle(g, h*2.1, h*0.7, h * 0.05, {fill: 'grey'});
-    svg.circle(g, h*3.2, h*0.50, h * 0.05, {fill: 'grey'});
+    svg.rect(pause, h * 0.1, h * 0.15, h * 0.8, h * 0.3);
+    svg.rect(pause, h * 0.1, h * 0.55, h * 0.8, h * 0.3);
+    svg.circle(g, h * 2.1, h * 0.3, h * 0.05, {fill: 'grey'});
+    svg.circle(g, h * 2.1, h * 0.7, h * 0.05, {fill: 'grey'});
+    svg.circle(g, h * 3.2, h * 0.50, h * 0.05, {fill: 'grey'});
 
     for (field in state) {
         fieldDisplays[field] = changeableText(svg, g, pad2(state[field]));
@@ -340,20 +341,22 @@ var timerInterface = function(svg, x, y, h, heart)
     heart.addCallback(update);
 
     control.addEventListener("click", toggle, false);
-    step.addEventListener("click", function(){heart.step()}, false);
+    step.addEventListener("click", function () {
+        heart.step();
+    }, false);
 
     return g;
-}
+};
 
 
 /// squareroot function
-var sqrt = function(x) {
+var sqrt = function (x) {
     return Math.pow(x, 0.5);
 };
 
 
 /// square function
-var sq = function(x) {
+var sq = function (x) {
     return x * x;
 };
 

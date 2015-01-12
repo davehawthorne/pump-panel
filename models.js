@@ -26,13 +26,13 @@ var modelComponents = {
         // from Australian Fire Authorities Council Pump Operation learning manual
         // kPa/(l/min)^2
         resistance: {
-            h38: 1/650,
-            h65: 1/8000,
-            h90: 1/45000
+            h38: 1 / 650,
+            h65: 1 / 8000,
+            h90: 1 / 45000
         }
     },
 
-    // Valves are modelled as variable resistance ranging from zero to infinite.  
+    // Valves are modelled as variable resistance ranging from zero to infinite.
     // midWayPresDrop is in kPa
     // forFlow is in l/min
     //
@@ -42,12 +42,12 @@ var modelComponents = {
             opening: 0.0,
             halfwayResistance: midWayPresDrop / sq(forFlow),
             resistance: function () {
-                if (priv.opening == 0.0) {
-                    return Number.POSITIVE_INFINITY
+                if (priv.opening === 0.0) {
+                    return Number.POSITIVE_INFINITY;
                 } else {
                     return priv.halfwayResistance * (1.0 / priv.opening - 1.0);
                 }
-            },
+            }
         };
         return {
             resistance: priv.resistance,
@@ -65,7 +65,7 @@ var modelComponents = {
             },
 
             closed: function () {
-                return priv.opening == 0.0;
+                return priv.opening === 0.0;
             }
         };
     },

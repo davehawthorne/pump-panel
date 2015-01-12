@@ -74,7 +74,7 @@ widgets.placeText = function (settings, textArray) {
         t,
         halfWidth = settings.size / 2;
 
-    for (i = 0; i < textArray.length; i++) {
+    for (i = 0; i < textArray.length; i += 1) {
         t = textArray[i];
         svg.createText(
             {
@@ -353,15 +353,15 @@ widgets.gauges.compound = function (settings) {
         switch (i) {
         case 0:
             redGrad.major(a);
-            i++;
+            i += 1;
             break;
         case 1:
             redGrad.minor(a);
-            i++;
+            i += 1;
             break;
         case 2:
             redGrad.mid(a);
-            i++;
+            i += 1;
             break;
         default:
             redGrad.minor(a);

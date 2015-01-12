@@ -1,8 +1,10 @@
 <html>
     <head>
         <title>Test Hydrant</title>
-        <script type="text/javascript" src="hydrant_line.js"></script>
-        <script type="text/ecmascript">
+        <script src="hydrant_line.js"></script>
+        <script>
+            "use strict";
+
 
             function inValve(halfwayRes) {
                 var priv = {
@@ -12,17 +14,17 @@
                     }
                 };
                 return {
-                    resistance: function() {
+                    resistance: function () {
                         return halfwayRes * (1.0 / priv.opening - 1.0);
                     },
                     set: function (opening) {
                         priv.opening = opening;
                     },
                     closed: function () {
-                        return priv.opening == 0.0;
+                        return priv.opening === 0.0;
                     }
                 };
-            };
+            }
 
             function run() {
                 var
@@ -42,8 +44,8 @@
                     k,
                     txt = '';
 
-                for (i=0; i<3; i++) {
-                    inValves[i].set(1.0 * document.getElementById('v'+i).value);
+                for (i = 0; i < 3; i += 1) {
+                    inValves[i].set(1.0 * document.getElementById('v' + i).value);
                     if (inValves[i].closed()) {
                         txt += "closed; ";
                     } else {
@@ -62,26 +64,12 @@
 
             }
 
-            /*
-            $(function() {
-
-            });
-
-            muck = function() {
-                var table = $('#attack');
-                table.append($('<tr>').append($('<th>').append($('<p>').html("hello"))));
-                table.append($('<tr>').append($('<th>').append($('<p>').html("bye"))));
-                table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="38">38</option><option value="64">64</option></select>'))));
-                table.append($('<tr>').append($('<th>').append($('<input type="text" value="1"/>'))));
-                table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475</option><option value="350">350</option><option value="125">125</option></select>'))));
-            }
-            */
         </script>
     </head>
-    <p>flows in kL/min</p>
-    <p>resistance in kPa/(kL/min)^2</p>
     <body>
-        <table border=1>
+        <p>flows in kL/min</p>
+        <p>resistance in kPa/(kL/min)^2</p>
+        <table border="1">
         <tr><td>hose num<input id="hoseNum" type="text"/> hose res<input id="hoseRes" type="text"/></td></tr>
         <tr><td>plumbRes<input id="plumbRes" type="text"/> halfwayRes <input id="halfwayRes" type="text"/></td></tr>
         <tr><td>valves <input id="v0" type="text"/> <input id="v1" type="text"/> <input id="v2" type="text"/></td></tr>
