@@ -1,5 +1,6 @@
 "use strict";
-/*global modelComponents*/
+
+var modelComponents = window.modelComponents || {};
 
 modelComponents.tank = function (settings) {
     var priv = {

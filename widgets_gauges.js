@@ -1,11 +1,8 @@
-/*global widgets svgDocument setAttrs myDebug*/
+/*global svg utils*/
+
 "use strict";
 
-//var widgets;
-
-if (typeof widgets === "undefined") {
-    var widgets = {};
-}
+var widgets = window.widgets || {};
 
 if (!widgets.gauges) {
     widgets.gauges = {};

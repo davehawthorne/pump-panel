@@ -15,6 +15,8 @@
         <script src="lamps.js"></script>
         <script src="widgets_controls.js"></script>
         <script>
+            /*global utils svg widgets $*/
+
             "use strict";
 
             var
@@ -64,7 +66,7 @@
                         title: "WATER"
                     });
 
-                    numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function (a) {
+                    utils.numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function (a) {
                         lev.set(a);
                     });
 

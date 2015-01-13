@@ -7,6 +7,8 @@
 
         <title>Gauge Test</title>
 
+        <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
+
         <script src="3rdParty/jquery.js"></script>
         <script src="3rdParty/jquery.svg.js"></script>
 
@@ -15,6 +17,7 @@
         <script src="widgets_gauges.js"></script>
         <script src="widgets_controls.js"></script>
         <script>
+            /*global svg widgets $*/
             "use strict";
 
             var
@@ -51,7 +54,7 @@
                     widgets.controls.outletValve({
                         yTop: 200,
                         yBot: 400,
-                        knobWidth: 80,
+                        knobWidth: 40,
                         width: 100,
                         height: 300,
                         callback: all,

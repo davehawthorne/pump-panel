@@ -1,10 +1,8 @@
-/*global widgets svg utils*/
+/*global svg utils*/
 "use strict";
 
+var widgets = window.widgets || {};
 
-if (!widgets) {
-    widgets = {};
-}
 if (!widgets.controls) {
     widgets.controls = {};
 }
@@ -69,12 +67,7 @@ widgets.controls.outletValve = function (settings) {
 
     };
 
-    priv.group = svg.create("g", {
-        x1: priv.cx - priv.halfWidth,
-        x2: priv.cx + priv.halfWidth,
-        y1: priv.cy - priv.halfHeight,
-        y2: priv.cy + priv.halfHeight
-    });
+    priv.group = svg.create("g", {});
 
     priv.paint = svg.create("line", {
         parent: priv.group,
@@ -114,9 +107,9 @@ widgets.controls.outletValve = function (settings) {
     priv.back = svg.create("rect", {
         parent: priv.group,
         x: priv.cx - priv.halfWidth,
-        y: priv.cy - priv.halfHeight,
+        y: priv.cy - priv.halfHeight - priv.knobR,
         width: priv.width,
-        height: priv.height,
+        height: priv.height + 2 * priv.knobR,
         "fill-opacity": 0
     });
 
@@ -130,8 +123,6 @@ widgets.controls.outletValve = function (settings) {
         }
         priv.grabbed = true;
         priv.cursorToCentre = clientY - knobY;
-        //TEMP!!!debug.val3.set(priv.cursorToCentre);
-        //TEMP!!!priv.knob.setAttributeNS(null, "y", evt.clientY - priv.halfWidth);
     };
     priv.moveHandle = function (clientY) {
         var cy;
@@ -175,7 +166,6 @@ widgets.controls.outletValve = function (settings) {
         }
     }, false);
 
-    //TEMP!!!settings.parent.appendChild(priv.group);
 
     return {
         getPosition: function () {
@@ -230,8 +220,6 @@ widgets.controls.toggleSwitch = function (settings) {
 
     priv.mount.addEventListener("click", priv.clickFunc, false);
 
-    //TEMP!!!settings.parent.appendChild(priv.mount);
-
     priv.tog = svg.create("line", {
         x1: priv.cx,
         x2: priv.cx,
@@ -281,11 +269,8 @@ widgets.controls.pushButton = function (settings) {
         if (evt.preventDefault) {
             evt.preventDefault();
         }
-        //var justPressed = !priv.pressing;
         priv.pressing = true;
-        //priv.pressed = true;
         svg.setAttrs(priv.butt, {fill: "red"});
-        //if (justPressed && priv.callback) {
         if (priv.callback) {
             priv.callback(true);
         }

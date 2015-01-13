@@ -1,3 +1,4 @@
+/*global utils*/
 "use strict";
 
 var modelComponents = window.modelComponents || {};

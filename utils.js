@@ -108,7 +108,7 @@ var changeableText = function (svg, parent, initial) {
 };
 
 
-var spinnerBase = function (svg, x, y, w, h, init, incFn, decFn, callback) {
+utils.spinnerBase = function (svg, x, y, w, h, init, incFn, decFn, callback) {
     var
         g = svg.group(),
         r = svg.rect(g, x, y, w, h),
@@ -152,7 +152,7 @@ var spinnerBase = function (svg, x, y, w, h, init, incFn, decFn, callback) {
 };
 
 
-var numSpinner = function (svg, x, y, w, h, min, max, step, digits, initial, callback) {
+utils.numSpinner = function (svg, x, y, w, h, min, max, step, digits, initial, callback) {
     var
         val = initial,
         inc = function () {
@@ -169,7 +169,7 @@ var numSpinner = function (svg, x, y, w, h, min, max, step, digits, initial, cal
             val = Math.max(min, val - step);
             return val.toFixed(digits);
         },
-        base = spinnerBase(svg, x, y, w, h, val.toFixed(digits), inc, dec, callback);
+        base = utils.spinnerBase(svg, x, y, w, h, val.toFixed(digits), inc, dec, callback);
 
     return {
         value : function () {
@@ -179,7 +179,7 @@ var numSpinner = function (svg, x, y, w, h, min, max, step, digits, initial, cal
 };
 
 
-var listSpinner = function (svg, x, y, w, h, vals, callback) {
+utils.listSpinner = function (svg, x, y, w, h, vals, callback) {
     var
         i = 0,
         max = vals.length - 1,
@@ -191,7 +191,7 @@ var listSpinner = function (svg, x, y, w, h, vals, callback) {
             i = (i > 0) ? (i - 1) : max;
             return vals[i];
         },
-        base = spinnerBase(svg, x, y, w, h, vals[0], inc, dec, callback);
+        base = utils.spinnerBase(svg, x, y, w, h, vals[0], inc, dec, callback);
     return {
         value : function () {
             return i;
@@ -200,7 +200,7 @@ var listSpinner = function (svg, x, y, w, h, vals, callback) {
 };
 
 
-var timerHeart = function (ticksPerSec) {
+utils.timerHeart = function (ticksPerSec) {
     var
         interval = 1000 / ticksPerSec,
         ticks = 0,
@@ -263,7 +263,7 @@ var timerHeart = function (ticksPerSec) {
 };
 
 
-var timerInterface = function (svg, x, y, h, heart)
+utils.timerInterface = function (svg, x, y, h, heart)
 {
     var
         g = svg.group({transform: "translate(" + x + "," + y + ")"}),
@@ -328,13 +328,15 @@ var timerInterface = function (svg, x, y, h, heart)
     svg.circle(g, h * 3.2, h * 0.50, h * 0.05, {fill: 'grey'});
 
     for (field in state) {
-        fieldDisplays[field] = changeableText(svg, g, pad2(state[field]));
+        if (typeof state[field] !== 'function') {
+            fieldDisplays[field] = changeableText(svg, g, pad2(state[field]));
+        }
     }
-    svg.change(fieldDisplays['mins'].text, {x: h * 1.1, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
-    svg.change(fieldDisplays['secs'].text, {x: h * 2.2, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
-    svg.change(fieldDisplays['subs'].text, {x: h * 3.3, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
-    svg.change(fieldDisplays['aver'].text, {x: h * 4.4, y: h * 0.4, fill: 'white', fontSize: h * 0.4});
-    svg.change(fieldDisplays['peak'].text, {x: h * 4.4, y: h * 0.8, fill: 'white', fontSize: h * 0.4});
+    svg.change(fieldDisplays.mins.text, {x: h * 1.1, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
+    svg.change(fieldDisplays.secs.text, {x: h * 2.2, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
+    svg.change(fieldDisplays.subs.text, {x: h * 3.3, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
+    svg.change(fieldDisplays.aver.text, {x: h * 4.4, y: h * 0.4, fill: 'white', fontSize: h * 0.4});
+    svg.change(fieldDisplays.peak.text, {x: h * 4.4, y: h * 0.8, fill: 'white', fontSize: h * 0.4});
 
     update();
 

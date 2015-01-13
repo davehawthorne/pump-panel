@@ -1,6 +1,7 @@
+/*global utils*/
 "use strict";
 
-var modelComponents = window.modelComponents || {}
+var modelComponents = window.modelComponents || {};
 
 
 /// I have combined the branch and the hose running to it so that we can

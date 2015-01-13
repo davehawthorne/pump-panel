@@ -7,8 +7,12 @@
 
         <title>Test Hydrant</title>
         <script src="hydrant_line.js"></script>
+        <script src="3rdParty/jquery.js"></script>
+
         <script>
             "use strict";
+            /*global $*/
+
 
 
             function inValve(halfwayRes) {
@@ -30,6 +34,7 @@
                     }
                 };
             }
+
 
             function run() {
                 var
@@ -57,17 +62,20 @@
                         txt += inValves[i].resistance() + "; ";
                     }
                 }
+
                 document.getElementById('valves').textContent = txt;
 
-                res = computeDeliveryLoss(hydrantPres, model, inValves);
-
                 txt = 'RES: ';
-                for (k in res) {
-                    txt += k + ': ' + res[k] + ' ';
-                }
                 document.getElementById('out').textContent = txt;
 
             }
+
+            $(function () {
+                $('#run').click(run);
+                //function() {
+                //alert("Handler for .click() called.");
+                //});
+            });
 
         </script>
     </head>
@@ -81,7 +89,7 @@
         <tr><td>hydrantPres<input id="hydrantPres" type="text"/></td></tr>
         <tr><td><div id="valves"></div></td></tr>
         <tr><td><div id="out"></div></td></tr>
-        <tr><td><div onclick="run();">Click Me</div></td></tr>
+        <tr><td><div id="run">Click Me</div></td></tr>
         </table>
     </body>
 </html>
