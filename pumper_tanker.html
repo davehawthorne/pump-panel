@@ -1,6 +1,9 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
         <title>Boronia Pumper Tanker Simulation</title>
         <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
         <style type="text/css">
@@ -9,37 +12,42 @@
             td {border: 1px solid red; padding: 10px;}
         </style>
 
-        <script type="text/javascript" src="3rdParty/jquery.js"></script>
-        <script type="text/ecmascript" src="3rdParty/jquery.svg.js"></script>
-        <script type="text/ecmascript" src="utils.js"></script>
-        <script type="text/ecmascript" src="svg.js"></script>
-        <script type="text/ecmascript" src="models.js"></script>
-        <script type="text/ecmascript" src="tank.js"></script>
-        <script type="text/ecmascript" src="lamps.js"></script>
-        <script type="text/ecmascript" src="widgets_gauges.js"></script>
-        <script type="text/ecmascript" src="widgets_controls.js"></script>
-        <script type="text/ecmascript" src="hydrant_line.js"></script>
-        <script type="text/ecmascript" src="attack_line.js"></script>
-        <script type="text/ecmascript" src="pumper_tanker.js"></script>
-        <script type="text/ecmascript">
+        <script src="3rdParty/jquery.js"></script>
+        <script src="3rdParty/jquery.svg.js"></script>
+        <script src="utils.js"></script>
+        <script src="svg.js"></script>
+        <script src="models.js"></script>
+        <script src="tank.js"></script>
+        <script src="lamps.js"></script>
+        <script src="widgets_gauges.js"></script>
+        <script src="widgets_controls.js"></script>
+        <script src="hydrant_line.js"></script>
+        <script src="attack_line.js"></script>
+        <script src="pumper_tanker.js"></script>
+        <script>
+            "use strict";
 
-            function drawIntro(svg) {
-                buildPumpPanel(svg, svg.root());
-                muck();
-                // $('#tankLevel').html('hello');
-            }
-            $(function() {
-                $('#pumpPanel').svg({onLoad: drawIntro, settings:{ width: 2000, height: 800} });
-            });
-
-            muck = function() {
+            function muck() {
                 var table = $('#attack');
                 table.append($('<tr>').append($('<th>').append($('<p>').html("hello"))));
                 table.append($('<tr>').append($('<th>').append($('<p>').html("bye"))));
                 table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="38">38</option><option value="64">64</option></select>'))));
                 table.append($('<tr>').append($('<th>').append($('<input type="text" value="1"/>'))));
                 table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475</option><option value="350">350</option><option value="125">125</option></select>'))));
-            };
+            }
+
+            function drawIntro(svg) {
+                buildPumpPanel(svg, svg.root());
+                muck();
+            }
+
+            $(function () {
+                $('#pumpPanel').svg({
+                    onLoad: drawIntro,
+                    settings: { width: 2000, height: 800}
+                });
+            });
+
         </script>
     </head>
     <body>
@@ -47,11 +55,11 @@
         <div id="pumpPanel"></div>
         <table id="other">
             <tr><th>tank level [l]</th><td id='tankLevel'>-</td></tr>
-            <tr><th>ticks</th><td id='ticks'>-</td>
-            <tr><th>totalFlow</th><td id='totalFlow'>-</td>
-            <tr><th>pumpPresOut</th><td id='pumpPresOut'>-</td>
-            <tr><th>pumpPresEye</th><td id='pumpPresEye'>-</td>
-            <tr><th>compDuration</th><td id='compDuration'>-</td>
+            <tr><th>ticks</th><td id='ticks'>-</td></tr>
+            <tr><th>totalFlow</th><td id='totalFlow'>-</td></tr>
+            <tr><th>pumpPresOut</th><td id='pumpPresOut'>-</td></tr>
+            <tr><th>pumpPresEye</th><td id='pumpPresEye'>-</td></tr>
+            <tr><th>compDuration</th><td id='compDuration'>-</td></tr>
         </table>
         <table id="attack">
         </table>

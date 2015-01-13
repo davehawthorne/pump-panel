@@ -1,4 +1,6 @@
+"use strict";
 
+var modelComponents = window.modelComponents || {}
 
 
 /// I have combined the branch and the hose running to it so that we can
@@ -19,7 +21,7 @@
 ///
 ///
 ///
-attackLine = function() {
+modelComponents.attackLine = function () {
     var
         workingPres = 700, // [kPa]
         headLoss = 0,  // level ground
@@ -29,7 +31,7 @@ attackLine = function() {
         branchOpen = false;
 
     return {
-        state: function() {
+        state: function () {
             return {
                 workingPres: workingPres,
                 headLoss: headLoss,
@@ -40,28 +42,29 @@ attackLine = function() {
         },
 
 
-        setHoseResistance: function(res) {
+        setHoseResistance: function (res) {
             hoseResistance = res;
         },
-        setWorkingPres: function(pres) {
+        setWorkingPres: function (pres) {
             workingPres = pres;
         },
-        setRise: function(rise) {
+        setRise: function (rise) {
             headLoss = rise * 10;  // kPa/m
         },
-        dialUpFlow: function(flow) {
+        dialUpFlow: function (flow) {
             ratedFlow = flow;
             kBranch = ratedFlow / workingPres;
         },
 
-        waterOn: function(on) {
+        waterOn: function (on) {
             branchOpen = on;
         },
 
         /// presIn is the pressure at the start of the hose [kPa]
         ///
         /// Returns the flow in [l/min]
-        getFlow: function(presIn) {
+        getFlow: function (presIn) {
+            var flow, discriminant;
             if (!branchOpen) {
                 return 0.0;
             }
@@ -69,7 +72,7 @@ attackLine = function() {
                 flow = kBranch * (presIn - headLoss);
             } else {
                 discriminant = 1 + 4 * hoseResistance * kBranch * kBranch * (presIn - headLoss);
-                flow = (sqrt(discriminant) - 1)/(2 * hoseResistance * kBranch);
+                flow = (utils.sqrt(discriminant) - 1) / (2 * hoseResistance * kBranch);
             }
             if (flow < 0.0) {
                 // no sucking
@@ -83,8 +86,8 @@ attackLine = function() {
         },
 
 
-        getBranchPres: function(flow, presIn) {
-            pres = presIn - headLoss - hoseResistance * flow * flow;
+        getBranchPres: function (flow, presIn) {
+            var pres = presIn - headLoss - hoseResistance * flow * flow;
             if (pres < 0.0) {
                 // no sucking
                 pres = 0.0;

@@ -53,7 +53,7 @@ var debugDisp = function (x, y, text) {
             baseText: text
         },
         textWid = svg.document.createElementNS(svgns, "text");
-    setAttrs(textWid, {
+    utils.setAttrs(textWid, {
         "text-anchor": "middle",
         x: x,
         y: y,
@@ -145,7 +145,7 @@ var model = (function () {
 
     al = [];
     for (i = 0; i < 4; i += 1) {
-        al[i] = attackLine();
+        al[i] = modelComponents.attackLine();
 
     }
 
@@ -219,7 +219,7 @@ var model = (function () {
 
         if (tankOutOpen) {
 
-            pres.pumpEye = 5 - 25e-6 * sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
+            pres.pumpEye = 5 - 25e-6 * utils.sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
 
         } else {
 
@@ -228,7 +228,7 @@ var model = (function () {
                 flow.total = hydrantParams.maxFlow;
                 pres.pumpEye = 0.0;
             } else {
-                pres.pumpEye = pres.hydrant - hydrantParams.equivResist * sq(flow.total);
+                pres.pumpEye = pres.hydrant - hydrantParams.equivResist * utils.sq(flow.total);
             }
         }
 

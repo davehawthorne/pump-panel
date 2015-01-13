@@ -153,7 +153,7 @@ widgets.gauges.baseGauge = function (backName, settings) {
 
     needle = svg.document.createElementNS(svgns, "use");
     needle.setAttributeNS(xlinkNS, "href", "#needle");
-    setAttrs(needle, {x: settings.cx - halfWidth, y: settings.cy - halfWidth, width: settings.size, height: settings.size});
+    utils.setAttrs(needle, {x: settings.cx - halfWidth, y: settings.cy - halfWidth, width: settings.size, height: settings.size});
     if (!settings.parent) {
         settings.parent = svg.root;
     }
@@ -166,8 +166,8 @@ widgets.gauges.baseGauge = function (backName, settings) {
         move: function (settings) {
             cx = settings.x + settings.size / 2;
             cy = settings.y + settings.size / 2;
-            setAttrs(needle, {x: settings.x, y: settings.y, width: settings.size, height: settings.size});
-            setAttrs(back, {x: settings.x, y: settings.y, width: settings.size, height: settings.size});  //TEMP!!! fix
+            utils.setAttrs(needle, {x: settings.x, y: settings.y, width: settings.size, height: settings.size});
+            utils.setAttrs(back, {x: settings.x, y: settings.y, width: settings.size, height: settings.size});  //TEMP!!! fix
         }
     };
 };
@@ -245,7 +245,7 @@ widgets.gauges.outlet = function (settings) {
         if (i === 10) {
             grad.major(a);
             i = 0;
-        } else if (i & 1) {
+        } else if (i % 2 === 1) {  // odd value
             grad.minor(a);
         } else {
             grad.mid(a);
@@ -380,7 +380,7 @@ widgets.gauges.compound = function (settings) {
         } else {
             blackGrad.minor(a);
         }
-        i = (i + 1) & 3;
+        i = (i + 1) % 4;  // modulo 4 increment
     }
 
     redGrad.draw(svg, 'red');
@@ -447,13 +447,13 @@ widgets.gauges.flow = function (settings) {
         cy: settings.cy,
         width: settings.width
     };
-    setAttrs(priv.mount, {
+    utils.setAttrs(priv.mount, {
         cx: priv.cx,
         cy: priv.cy,
         r: settings.width / 2,
         fill: "#880000"
     });
-    setAttrs(priv.textElem, {
+    utils.setAttrs(priv.textElem, {
         "text-anchor": "middle",
         x: priv.cx,
         y: priv.cy,

@@ -1,10 +1,6 @@
 /*global widgets svg utils*/
 "use strict";
-//var widgets;
 
-if (!widgets) {
-    widgets = {};
-}
 
 if (!widgets) {
     widgets = {};
@@ -156,7 +152,7 @@ widgets.controls.outletValve = function (settings) {
     };
 
     priv.back.addEventListener("mousedown", function (evt) {
-        if(evt.preventDefault) {
+        if (evt.preventDefault) {
             evt.preventDefault();
         }
         priv.grabHandle(evt.clientY);
@@ -202,7 +198,7 @@ widgets.controls.toggleSwitch = function (settings) {
             setFunc: null
         },
         i, line, span;
-        
+
     priv.setFunc = function (on) {
         if (on) {
             svg.setAttrs(priv.tog, {y2: priv.cy + priv.width});
@@ -210,7 +206,7 @@ widgets.controls.toggleSwitch = function (settings) {
             svg.setAttrs(priv.tog, {y2: priv.cy - priv.width});
         }
     };
-    
+
     priv.clickFunc = function (evt) {
         priv.on = !priv.on;
         priv.setFunc(priv.on);
@@ -282,7 +278,7 @@ widgets.controls.pushButton = function (settings) {
     });
 
     priv.buttonPress = function (evt) {
-        if(evt.preventDefault) {
+        if (evt.preventDefault) {
             evt.preventDefault();
         }
         //var justPressed = !priv.pressing;

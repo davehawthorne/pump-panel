@@ -350,19 +350,19 @@ var timerInterface = function (svg, x, y, h, heart)
 
 
 /// squareroot function
-var sqrt = function (x) {
+utils.sqrt = function (x) {
     return Math.pow(x, 0.5);
 };
 
 
 /// square function
-var sq = function (x) {
+utils.sq = function (x) {
     return x * x;
 };
 
 
 /// Helper function
-var setAttrs = function (element, atts) {
+utils.setAttrs = function (element, atts) {
     var atName;
     for (atName in atts) {
         if (typeof atts[atName] !== 'function') {
