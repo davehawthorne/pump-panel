@@ -79,7 +79,7 @@ widgets.placeText = function (settings, textArray) {
         svg.createText(
             {
                 color: 'black',
-                align: 'left',
+                align: 'start',
                 fontSize: 12,
                 text: t[2],
                 yTop: settings.cy + t[1] * halfWidth,
