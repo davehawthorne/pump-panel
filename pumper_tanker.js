@@ -115,7 +115,7 @@ var model = (function () {
     var
         i, engine, flow, engineTick, attackLineFricLoss, supplyLineFricLoss,
         boost, al, outValve, inValve, pres, hydraulicTick, iterateFlow,
-        hydrantParams = {open: false},
+        hydrantParams,
 
         hydrantModel = {
             lengthResistance: modelComponents.hose.resistance.h65,
@@ -221,25 +221,34 @@ var model = (function () {
     hydraulicTick = function () {
         var
             outlet,
-            total = 0.0;
+            total = 0.0,
+            hydrantParams;
 
         if (tankOutOpen) {
 
             pres.pumpEye = 5 - 25e-6 * utils.sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
 
         } else {
+            hydrantParams = modelComponents.computeDeliveryLoss(pres.hydrant, hydrantModel, inValve);
 
             if (flow.total > hydrantParams.maxFlow) {
+                active.hoseCollapse.pulse();
                 // hydrant line collapsing
                 flow.total = hydrantParams.maxFlow;
-                pres.pumpEye = 0.0;
+                //TEMP!!! pres.pumpEye = 0.0;
             } else {
                 pres.pumpEye = pres.hydrant - hydrantParams.equivResist * utils.sq(flow.total);
+                if (pres.pumpEye < 0.0) {
+                }
             }
         }
-
-        pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
-
+        if (pres.pumpEye < -100) {
+            active.cavitation.pulse();
+            pres.pumpEye = -100;
+            pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total) / 2;
+        } else {
+            pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
+        }
         for (outlet = 0; outlet < 5; outlet += 1) {
             if (outValve[outlet].closed()) {
                 flow.outlet[outlet] = 0.0;
@@ -277,11 +286,9 @@ var model = (function () {
     return {
         setHydrantLengths: function (l) {
             hydrantModel.lengths = l;
-            //TEMP!!! hydrantParams = computeDeliveryLoss(pres.hydrant, hydrantModel, inValve);
         },
         setHydrantPres: function (p) {   //TEMP!!!
             pres.hydrant = p;
-            //TEMP!!! hydrantParams = computeDeliveryLoss(pres.hydrant, hydrantModel, inValve);
         },
         setHydrantLineRise: function (h) {
         },
@@ -289,13 +296,11 @@ var model = (function () {
             var totalRes;
             outValve[index].set(value);
             totalRes = outValve[index].resistance() + 1 / 650;    //TEMP!!! add a length of 38
-            //TEMP!!! daveThing('compDuration', temp);
             al[index].setHoseResistance(totalRes);
         },
 
         setInValve: function (index, value) {
             inValve[index].set(value);
-            //TEMP!!! hydrantParams = computeDeliveryLoss(pres.hydrant, hydrantModel, inValve);
         },
 
         startBut: function (on) {
@@ -309,7 +314,6 @@ var model = (function () {
             case "ready":
                 engine.rpm = 800;
                 engine.state = "running";
-                //TEMP!!!active.revGauge.showPressure(state.engineRpm);
                 return;
 
             }
@@ -400,9 +404,6 @@ var updatePanel = function () {
 
 var buildPumpPanel = function (jqSvg, svgDocument) {
     svg.setDocument(svgDocument);
-    // if (!window.svgDocument) {
-    // svgDocument = evt.target.ownerDocument;
-    // }
     try {
         var
             de = svgDocument.documentElement,
@@ -410,7 +411,6 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
             hpCircle = svg.create("circle", {cx: 350, cy: 180, r: 90, fill: "blue"}),
             combCircle = svg.create("circle", {cx: 600, cy: 180, r: 90, fill: "green"}),
             outCircle = svg.create("circle", {cx: 850, cy: 180, r: 90, fill: "red"}),
-            //TEMP!!!active,
             i,
             x,
             sideways,
@@ -425,15 +425,13 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
             onOff: widgets.controls.toggleSwitch({parent: de, cx: 625, cy: 450, width: 20, text: ["OFF-ON"], callback: model.onOff}),
             decreaseRevs: widgets.controls.pushButton({parent: de, cx: 700, cy: 450, width: 40, text: ["DEC."], callback: model.revDown}),
             increaseRevs: widgets.controls.pushButton({parent: de, cx: 775, cy: 450, width: 40, text: ["INC."], callback: model.revUp}),
-            //inLeft: widgets.controls.outletValve({parent: de, cx: 400, yTop: 650, yBot: 750, width: 40}),
-            //inRight: widgets.controls.outletValve({parent: de, cx: 950, yTop: 650, yBot: 750, width: 40}),
             tankIso: widgets.controls.toggleSwitch({parent: de, cx: 1150, cy: 180, width: 20, text: ["WATER TANK", "ISO VALVE"], callback: model.tankIso, initial: true}),
-            waterLevel: widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"})
+            waterLevel: widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"}),
+            cavitation: widgets.gauges.lamp({cx: 600, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [255, 0, 0]}),
+            hoseCollapse: widgets.gauges.lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
         };
 
         active.waterLevel.set(0.5);
-        //active.revGauge.showPressure(0);
-        //active.fmRightBack.set(0);
         active.outValue = [];
         active.outFlow = [];
         for (i = 0; i < 5; i += 1) {
@@ -471,7 +469,7 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
         heart.addCallback(model.tick);
         heart.addCallback(updatePanel);
 
-        debug.felt = svg.create("rect", {parent: de, x: 1500, y: 0, width: 400, height: 800, fill: "green"});
+        debug.felt = svg.create("rect", {parent: de, x: 1500, y: 0, width: 400, height: 800, fill: "#00AA22"});
 
         debug.bu = debugDisp(1800, 75, "but up");
         debug.val1 = debugDisp(1800, 100, "knobTopY");
@@ -482,7 +480,6 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
         debug.ep = debugDisp(1600, 100, "eye pres");
         debug.pp = debugDisp(1600, 125, "pump pres");
         debug.op = debugDisp(1600, 150, "out pres");
-        //debug.cycles = debugDisp(1600, 150, "cycles");
         debug.bp = debugDisp(1600, 175, "branch pres");
         debug.bf0 = debugDisp(1600, 200, "branch flow 0");
         debug.bf1 = debugDisp(1600, 220, "branch flow 1");
@@ -511,22 +508,6 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
         logger(['o0', 'o4', 'pres.pumpEye', 'pres.pumpOut', 'tank']);
 
-        // debug.step = widgets.controls.toggleSwitch({cx: 1600, cy: 600, width: 20, text: ["STEP"]});
-        // widgets.controls.pushButton({cx: 1600, cy: 650, width: 40, text: ["STEP"], callback: function () {
-        // model.tick();
-        // updatePanel();
-        // }});
-        //
-        //
-        // setInterval(function () {
-        // if (!debug.step.isOn()) {
-        // return;  //TEMP!!!
-        // }
-        // model.tick();
-        // updatePanel();
-        //
-        // }, 100);
-
         model.tick();
         updatePanel();
 
@@ -537,8 +518,6 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 };
 
 
-function myDebug(mess) {
-}
 
 
 

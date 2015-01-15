@@ -12,12 +12,14 @@ V is the flow rate
 
 */
 
+var modelComponents = window.modelComponents || {};
+
 /// Includes hydrant valve, hose losses, inlet valve loss and plumbing to the
 /// pump eye.  Called whenever the configuration or valves are changed.
 ///
 /// We assume the 125mm inlet has twinned lines in and the 65mm inlets have a
 /// single line in each.
-var computeDeliveryLoss = function (hydrantPres, model, inValves) {
+modelComponents.computeDeliveryLoss = function (hydrantPres, model, inValves) {
     var
         i,
         // friction loss of each line [kPa.(l/m)^-2]

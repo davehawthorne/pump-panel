@@ -7,11 +7,12 @@
 
         <title>Test Hydrant</title>
         <script src="hydrant_line.js"></script>
+        <script src="utils.js"></script>
         <script src="3rdParty/jquery.js"></script>
 
         <script>
             "use strict";
-            /*global $*/
+            //*global $ modelComponents*/
 
 
 
@@ -52,6 +53,7 @@
                     res,
                     i,
                     k,
+                    hp,
                     txt = '';
 
                 for (i = 0; i < 3; i += 1) {
@@ -63,9 +65,12 @@
                     }
                 }
 
+                hp = modelComponents.computeDeliveryLoss(hydrantPres, model, inValves);
+
+
                 document.getElementById('valves').textContent = txt;
 
-                txt = 'RES: ';
+                txt = 'RES: open ' + hp.open + " mf " + hp.maxFlow + " equiv " + hp.equivResist;
                 document.getElementById('out').textContent = txt;
 
             }
