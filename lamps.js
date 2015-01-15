@@ -13,7 +13,7 @@ if (!widgets.gauges) {
 
 // This method is only called by widgets.gauges.lamp()
 //
-// The glow of the lamps when turned on and the gradients of lamp bevels and 
+// The glow of the lamps when turned on and the gradients of lamp bevels and
 // lamp surfaces.
 // rgb is an RGB integer array (3 values from 0 to 255)
 //
@@ -65,19 +65,20 @@ widgets.gauges.lampFill = function (rgb, id) {
 // The parameters passed to the constructor are:
 // - cx, cy: the location of the lamp centre
 // - rBevel, rGlobe: the radii of the components, bevel should be bigger than globe
-// - colour: a three value array containing the RGB value of the illuminated globe 
+// - colour: a three value array containing the RGB value of the illuminated globe
 //   (extingished lamp has these values halved.)
 //
 // The glow of the lamp, the shine of the bevel and the shine of the unlit lamp
-// is acheived with the lampFill method.  
+// is acheived with the lampFill method.
 widgets.gauges.lamp = function (settings) {
-    var 
-        priv = utils.copyAttribs(settings, ['cx', 'cy', 'rBevel', 'rGlobe', 'colour']),
+    var
+        priv = utils.copyAttribs(settings, ['cx', 'cy', 'rBevel', 'rGlobe', 'colour', 'interval']),
         rgb = priv.colour,
         id = 'R' + rgb[0] + 'G' + rgb[1] + 'B' + rgb[2];
 
     widgets.gauges.lampFill(rgb, id);
 
+    priv.lampLit = false;
     priv.convexBevel = svg.create("circle", {
         parent: settings.parent,
         cx: priv.cx,
@@ -108,14 +109,64 @@ widgets.gauges.lamp = function (settings) {
         filter: "url(#glow" + id + ")",
         visibility: 'hidden'
     });
+
+    priv.clearTimer = function () {
+        if (priv.timer) {
+            clearInterval(priv.timer);
+        }
+        priv.timer = null;
+    };
+
+    priv.setTimer = function (callback) {
+        priv.timer = setInterval(callback, priv.interval);
+    };
+
+    priv.set = function (on) {
+        if (priv.lampLit !== on) {
+            priv.glow.setAttribute('visibility', on ? 'inherit' : 'hidden');
+            priv.lampLit = on;
+        }
+    };
+
+    priv.pulseFunc = function () {
+        priv.clearTimer();
+        priv.set(false);
+    };
+
+    priv.flashFunc = function () {
+        priv.set(!priv.lampLit);
+    };
+
     return {
         set: function (on) {
-            priv.glow.setAttribute('visibility', on ? 'inherit' : 'hidden');
+            priv.clearTimer();
+            if (priv.lampLit !== on) {
+                priv.set(on);
+                priv.lampLit = on;
+            }
+        },
+        pulse: function () {
+            priv.clearTimer();
+            priv.set(true);
+            priv.setTimer(priv.pulseFunc);
+
+        },
+        flash: function () {
+            priv.clearTimer();
+            priv.flashState = true;
+            priv.set(true);
+            priv.setTimer(priv.flashFunc);
         }
     };
 };
 
-
+// LEVEL       STATE
+// > 95%       all 4 amber on
+// 75% - 95%   3 amber on
+// 50% - 75%   2 amber on
+// 25% - 50%   1 amber on
+// <25%        red on
+// 0%          red flashing
 widgets.gauges.levelIndicator = function (settings) {
     var
         priv = {
@@ -143,7 +194,8 @@ widgets.gauges.levelIndicator = function (settings) {
             rBevel: 20,
             rGlobe: 13,
             colourId: i ? "Amber" : "Red",
-            colour: i ? [255, 127, 0] : [255, 0, 0]
+            colour: i ? [255, 127, 0] : [255, 0, 0],
+            interval: 500
         });
         priv.level[i] = svg.createText({
             cx: priv.cx + priv.lampDist,
@@ -158,24 +210,35 @@ widgets.gauges.levelIndicator = function (settings) {
                 throw {name: 'badParam', message: 'bad level fill:' + level.toString()};
             }
 
-            var lampsOn = Math.floor(level * 4);
-            if (lampsOn > priv.currentLampsOn) {
-                for (i = priv.currentLampsOn; i < lampsOn; i += 1) {
-                    priv.lamp[i + 1].set(true);
-                }
-                if (priv.currentLampsOn === 0) {
-                    priv.lamp[0].set(false);
-                }
-                priv.currentLampsOn = lampsOn;
-            } else if (lampsOn < priv.currentLampsOn) {
-                for (i = lampsOn; i < priv.currentLampsOn; i += 1) {
-                    priv.lamp[i + 1].set(false);
-                }
-                if (lampsOn === 0) {
-                    priv.lamp[0].set(true);
-                }
-                priv.currentLampsOn = lampsOn;
+
+
+            var lampsOn;
+            if (level > 0.95) {
+                lampsOn = 4;
+            } else if (level < 0.05) {
+                lampsOn = -1;
+            } else {
+                lampsOn = Math.floor(level * 4);
             }
+
+            if (lampsOn === priv.currentLampsOn) {
+                return;
+            }
+
+            for (i = 1; i <= lampsOn; i += 1) {
+                priv.lamp[i].set(true);
+            }
+            for (i = lampsOn + 1; i <= 4; i += 1) {
+                priv.lamp[i].set(false);
+            }
+            if (lampsOn > 0) {
+                priv.lamp[0].set(false);
+            } else if (lampsOn === 0) {
+                priv.lamp[0].set(true);
+            } else {
+                priv.lamp[0].flash();
+            }
+            priv.currentLampsOn = lampsOn;
         }
     };
 };

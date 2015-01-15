@@ -28,7 +28,10 @@
                 sid = function (on) {
                     var i;
                     for (i = 0; i < size * size; i += 1) {
-                        bob[i].set((aaa + i) % 5);
+                        bob[i].set((aaa + i) % 10 === 0);
+                        if ((aaa + i) % 10 === 5) {
+                            bob[i].flash();
+                        }
                     }
                     aaa += 1;
                 },
@@ -40,6 +43,13 @@
                     }
                 },
 
+                pulse = function (on) {
+                    var i;
+                    for (i = 0; i < size * size; i += 1) {
+                        bob[i].pulse();
+                    }
+                },
+
                 test = function (x) {
                     var i, j, step = 255 / size;
 
@@ -47,6 +57,7 @@
                     svg.create("rect", {x: 0, y: 10, width: 1000, height: 600, fill: "#202090"});
                     widgets.controls.toggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
                     widgets.controls.toggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
+                    widgets.controls.toggleSwitch({cx: 450, cy: 40, width: 20, text: ["pulse"], callback: pulse});
                     for (j = 0; j < size; j += 1) {
                         for (i = 0; i < size; i += 1) {
                             bob[i + j * size] = widgets.gauges.lamp({
@@ -54,7 +65,8 @@
                                 cy: 100 + 60 * j,
                                 rBevel: 20 + i,
                                 rGlobe: 13 + j,
-                                colour: [i * step, j * step, 250 - i * step / 2 - j * step / 2]
+                                colour: [i * step, j * step, 250 - i * step / 2 - j * step / 2],
+                                interval: 500
                             });
                         }
                     }
