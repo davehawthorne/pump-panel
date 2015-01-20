@@ -29,6 +29,26 @@ mySvg.create = function (type, attributes) {
 };
 
 
+mySvg.path = function (list) {
+    var i, str = '', l;
+    for (i = 0; i < list.length; i += 1) {
+        l = list[i];
+        switch (typeof list[i]) {
+        case 'string':
+        case 'number':
+            str += l + ' ';
+            break;
+        case 'object':
+            str += l[0] + ',' + l[1] + ' ';
+            break;
+        default:
+            throw new Error('bad list: ' + list);
+        }
+    }
+    return str.trim();
+};
+
+
 mySvg.radGrad = function (settings) {
     var attrs, grad;
     attrs = utils.copyAttribs(settings, ["id", "fx", "fy", "cx", "cy", "r"]);
