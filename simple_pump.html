@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+        <title>Simple Pump Panel Simulation</title>
+        <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
+        <style type="text/css">
+            table {border-collapse: collapse; border: 2px solid red;}
+            th {border: 1px solid red; padding: 10px;}
+            td {border: 1px solid red; padding: 10px;}
+        </style>
+
+        <script src="3rdParty/jquery.js"></script>
+        <script src="3rdParty/jquery.svg.js"></script>
+        <script src="utils.js"></script>
+        <script src="svg.js"></script>
+        <script src="models.js"></script>
+        <script src="tank.js"></script>
+        <script src="lamps.js"></script>
+        <script src="widgets_gauges.js"></script>
+        <script src="widgets_controls.js"></script>
+        <script src="hydrant_line.js"></script>
+        <script src="attack_line.js"></script>
+        <script src="simple_pump.js"></script>
+        <script src="panel_layout.js"></script>
+        <script>
+            /*global buildPumpPanel $*/
+            "use strict";
+
+            $(function () {
+                $('#pumpPanel').svg({
+                    onLoad: function (s) {
+                        // svg.setDocument(s.root());
+                        // paint();
+                        // bolt(s.root());
+                        buildPumpPanel(s, s.root());
+                    },
+                    settings: { width: 2000, height: 800}
+                });
+            });
+
+        </script>
+    </head>
+    <body>
+        <h1>Boronia Pumper Tanker Simulation</h1>
+        <div id="pumpPanel"></div>
+    </body>
+</html>
+
