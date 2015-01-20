@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+
+        <title>Spinner Test</title>
+
+        <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
+
+        <script src="3rdParty/jquery.js"></script>
+        <script src="3rdParty/jquery.svg.js"></script>
+
+        <script src="utils.js"></script>
+        <script src="svg.js"></script>
+        <script src="spinner.js"></script>
+        <script>
+            /*global svg spinner utils $*/
+            "use strict";
+            function test(jqSvg) {
+                try {
+                    svg.setDocument(jqSvg.root());
+                    spinner.numSpinner(jqSvg, 100, 10, 150, 50, 1, 15, 1, 0, 1, function (x) {
+                    });
+                    spinner.listSpinner(jqSvg, 100, 80, 150, 50, ["One", "Two", "three"], function (x) {
+                    });
+                }
+                catch (ex) {
+                    utils.handleException(ex);
+                }
+
+            }
+
+
+
+            $(function () {
+                $('#svg1').svg({
+                    onLoad: test,
+                    settings: {width: 800, height: 600}
+                });
+            });
+
+
+
+        </script>
+
+    </head>
+    <body>
+        <h1>Spinner Test</h1>
+        <p><a href="./index.html">test index</a></p>
+        <div id="svg1"></div>
+    </body>
+</html>
