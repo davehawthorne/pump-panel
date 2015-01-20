@@ -69,14 +69,6 @@ widgets.controls.outletValve = function (settings) {
 
     priv.group = svg.create("g", {});
 
-    priv.paint = svg.create("line", {
-        parent: priv.group,
-        x1: priv.cx,
-        x2: priv.cx,
-        y1: priv.yTop,
-        y2: priv.yBot,
-        style: "stroke-linecap: round; stroke: #303080; stroke-width: " + priv.paintWidth.toString()
-    });
     priv.slot = svg.create("line", {
         parent: priv.group,
         x1: priv.cx,
@@ -170,6 +162,9 @@ widgets.controls.outletValve = function (settings) {
     return {
         getPosition: function () {
             return priv.pos;
+        },
+        setCallback: function (callback) {
+            priv.callback = callback;
         }
     };
 };
