@@ -69,7 +69,7 @@ widgets.placeText = function (settings, textArray) {
     var
         i,
         t,
-        halfWidth = settings.size / 2;
+        r = settings.radius;
 
     for (i = 0; i < textArray.length; i += 1) {
         t = textArray[i];
@@ -79,8 +79,8 @@ widgets.placeText = function (settings, textArray) {
                 align: 'start',
                 fontSize: 12,
                 text: t[2],
-                yTop: settings.cy + t[1] * halfWidth,
-                cx: settings.cx + t[0] * halfWidth
+                yTop: settings.cy + t[1] * r,
+                cx: settings.cx + t[0] * r
             }
         );
     }
@@ -94,7 +94,7 @@ widgets.gauges.baseGauge = function (backName, settings) {
     var
         back,
         needle,
-        halfWidth = settings.size / 2,
+        r = settings.radius,
         cx = settings.cx,
         cy = settings.cy,
         priv;
@@ -126,7 +126,7 @@ widgets.gauges.baseGauge = function (backName, settings) {
     priv.convexBevel = svg.create("circle", {
         cx: cx,
         cy: cy,
-        r: halfWidth,
+        r: settings.radius,
         stroke: "black",
         fill: "url(#convexGaugeBevelFill)"
     });
@@ -135,7 +135,7 @@ widgets.gauges.baseGauge = function (backName, settings) {
         //parent: priv.convexBevel,
         cx: cx,
         cy: cy,
-        r: halfWidth * 0.95,
+        r: r * 0.95,
         stroke: "none",
         fill: "url(#concaveGaugeBevelFill)"
     });
@@ -143,14 +143,14 @@ widgets.gauges.baseGauge = function (backName, settings) {
     priv.face = svg.create("circle", {
         cx: cx,
         cy: cy,
-        r: halfWidth * 0.9,
+        r: r * 0.9,
         stroke: "black",
         fill: "white"
     });
 
     needle = svg.document.createElementNS(svgns, "use");
     needle.setAttributeNS(xlinkNS, "href", "#needle");
-    utils.setAttrs(needle, {x: settings.cx - halfWidth, y: settings.cy - halfWidth, width: settings.size, height: settings.size});
+    utils.setAttrs(needle, {x: cx - r, y: cy - r, width: 2 * r, height: 2 * r});
     if (!settings.parent) {
         settings.parent = svg.root;
     }
@@ -159,12 +159,6 @@ widgets.gauges.baseGauge = function (backName, settings) {
     return {
         setNeedle: function (angle) {
             needle.setAttribute("transform", "rotate(" + angle + "," + cx + "," + cy + ")");
-        },
-        move: function (settings) {
-            cx = settings.x + settings.size / 2;
-            cy = settings.y + settings.size / 2;
-            utils.setAttrs(needle, {x: settings.x, y: settings.y, width: settings.size, height: settings.size});
-            utils.setAttrs(back, {x: settings.x, y: settings.y, width: settings.size, height: settings.size});  //TEMP!!! fix
         }
     };
 };
@@ -175,8 +169,8 @@ widgets.gauges.highPressure = function (settings) {
     var
         base = widgets.gauges.baseGauge("#hpGauge", settings),
         a, i,
-        halfWidth = settings.size / 2,
-        grad = widgets.dialGraduations(settings.cx, settings.cy, halfWidth);
+        r = settings.radius,
+        grad = widgets.dialGraduations(settings.cx, settings.cy, r);
 
     grad.zero(45);
     for (a = 45 + 6.75, i = 1; a <= 315; a += 6.75)
@@ -231,8 +225,8 @@ widgets.gauges.outlet = function (settings) {
         base = widgets.gauges.baseGauge("#outletGauge", settings),
         a, i,
         r2,
-        halfWidth = settings.size / 2,
-        grad = widgets.dialGraduations(settings.cx, settings.cy, halfWidth);
+        r = settings.radius,
+        grad = widgets.dialGraduations(settings.cx, settings.cy, r);
 
 
     grad.zero(45);
@@ -286,8 +280,8 @@ widgets.gauges.engineRevs = function (settings) {
     var
         base = widgets.gauges.baseGauge("#revsGauge", settings),
         a, i,
-        halfWidth = settings.size / 2,
-        grad = widgets.dialGraduations(settings.cx, settings.cy, halfWidth);
+        r = settings.radius,
+        grad = widgets.dialGraduations(settings.cx, settings.cy, r);
 
     grad.zero(45);
     for (a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
@@ -342,9 +336,9 @@ widgets.gauges.compound = function (settings) {
         base = widgets.gauges.baseGauge("#compoundGauge", settings),
         a, i,
         r2,
-        halfWidth = settings.size / 2,
-        redGrad = widgets.dialGraduations(settings.cx, settings.cy, halfWidth),
-        blackGrad = widgets.dialGraduations(settings.cx, settings.cy, halfWidth);
+        r = settings.radius,
+        redGrad = widgets.dialGraduations(settings.cx, settings.cy, settings.radius),
+        blackGrad = widgets.dialGraduations(settings.cx, settings.cy, settings.radius);
 
     for (a = 180 - 7, i = 1; a >= 40; a -= 7) {
         switch (i) {
