@@ -55,22 +55,29 @@ utils.append = function (obj, extra) {
     }
 };
 
+utils.keysStr = function (obj) {
+    var i, str = "";
+    for (i in obj) {
+        if (typeof obj[i] === 'function') {
+            str += i + ": function, ";
+        } else {
+            str += i + ": " + obj[i] + ", ";
+        }
+    }
+    return str;
+};
+
 
 utils.copyAttribs = function (orig, attrList) {
     var i, attr, copy = {};
     for (i = 0; i < attrList.length; i += 1) {
         attr = attrList[i];
         if (orig[attr] === undefined) {
-            throw {
-                name: 'ParamError',
-                message: 'missing param: ' + attr
-            };
+
+            throw new Error('missing param: ' + attr + ' from ' + utils.keysStr(orig));
         }
         if (copy[attr] !== undefined) {
-            throw {
-                name: 'ParamError',
-                message: 'extra param: ' + attr
-            };
+            throw new Error('extra param: ' + attr);
         }
         copy[attr] = orig[attr];
     }
