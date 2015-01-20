@@ -1,10 +1,6 @@
 /*global widgets model modelComponents utils svg $*/
 "use strict";
-var widgets;
 
-if (!widgets) {
-    widgets = {};
-}
 ///
 /// Notes:
 ///   All pressures are relative to atmospheric: 100kPa
@@ -201,6 +197,7 @@ var model = (function () {
             case 1:
                 engine.rpm += 50;
                 if (engine.rpm > 4000) {
+                    active.modelFail.pulse();
                     // red-lining
                 }
                 break;
@@ -222,26 +219,41 @@ var model = (function () {
         var
             outlet,
             total = 0.0,
-            hydrantParams;
-
-        if (tankOutOpen) {
-
-            pres.pumpEye = 5 - 25e-6 * utils.sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
-
-        } else {
             hydrantParams = modelComponents.computeDeliveryLoss(pres.hydrant, hydrantModel, inValve);
 
-            if (flow.total > hydrantParams.maxFlow) {
-                active.hoseCollapse.pulse();
-                // hydrant line collapsing
-                flow.total = hydrantParams.maxFlow;
-                //TEMP!!! pres.pumpEye = 0.0;
+        if (tankOutOpen) {
+            if (hydrantParams.open) {
+                active.modelFail.pulse();
             } else {
-                pres.pumpEye = pres.hydrant - hydrantParams.equivResist * utils.sq(flow.total);
-                if (pres.pumpEye < 0.0) {
+                if (tank.getWater() === 0.0) {
+                    pres.pumpOut = 0.0;
+                    active.cavitation.pulse();
+                } else {
+                    pres.pumpEye = 5 - 25e-6 * utils.sq(flow.total);     //TEMP!!! magic numbers 0.5m head 25 kPa loss at 1kL/min
+                    pres.pumpOut = pres.pumpEye + boost(engine.rpm, flow.total);
                 }
             }
+        } else {   // tank valve closed
+            if (hydrantParams.open) {
+                if (flow.total > hydrantParams.maxFlow) {
+                    active.hoseCollapse.pulse();
+                    // hydrant line collapsing
+                    //TEMP!!! flow.total = hydrantParams.maxFlow;
+                    //TEMP!!! pres.pumpEye = 0.0;
+                    pres.pumpEye = pres.hydrant - hydrantParams.equivResist * utils.sq(hydrantParams.maxFlow);
+                } else {
+                    pres.pumpEye = pres.hydrant - hydrantParams.equivResist * utils.sq(flow.total);
+                }
+            } else {
+                active.modelFail.pulse();
+
+                // there's no source water, if any outlet is open drop the pressure to 0
+
+            }
         }
+
+
+
         if (pres.pumpEye < -100) {
             active.cavitation.pulse();
             pres.pumpEye = -100;
@@ -417,10 +429,10 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
             heart = utils.timerHeart(10);  // ten times per second
 
         active = {
-            outGauge: widgets.gauges.outlet({parent: de, cx: 350, cy: 180, size: 150}),
-            combGauge: widgets.gauges.compound({parent: de, cx: 600, cy: 180, size: 150}),
-            hpGauge: widgets.gauges.highPressure({parent: de, cx: 850, cy: 180, size: 150}),
-            revGauge: widgets.gauges.engineRevs({parent: de, cx: 1025, cy: 180, size: 100}),
+            outGauge: widgets.gauges.outlet({parent: de, cx: 350, cy: 180, radius: 75}),
+            combGauge: widgets.gauges.compound({parent: de, cx: 600, cy: 180, radius: 75}),
+            hpGauge: widgets.gauges.highPressure({parent: de, cx: 850, cy: 180, radius: 75}),
+            revGauge: widgets.gauges.engineRevs({parent: de, cx: 1025, cy: 180, radius: 50}),
             startBut: widgets.controls.pushButton({parent: de, cx: 550, cy: 450, width: 40, text: ["START"], callback: model.startBut}),
             onOff: widgets.controls.toggleSwitch({parent: de, cx: 625, cy: 450, width: 20, text: ["OFF-ON"], callback: model.onOff}),
             decreaseRevs: widgets.controls.pushButton({parent: de, cx: 700, cy: 450, width: 40, text: ["DEC."], callback: model.revDown}),
@@ -428,7 +440,8 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
             tankIso: widgets.controls.toggleSwitch({parent: de, cx: 1150, cy: 180, width: 20, text: ["WATER TANK", "ISO VALVE"], callback: model.tankIso, initial: true}),
             waterLevel: widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"}),
             cavitation: widgets.gauges.lamp({cx: 600, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [255, 0, 0]}),
-            hoseCollapse: widgets.gauges.lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
+            hoseCollapse: widgets.gauges.lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]}),
+            modelFail: widgets.gauges.lamp({cx: 40, cy: 40, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
         };
 
         active.waterLevel.set(0.5);
