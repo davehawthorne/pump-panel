@@ -43,10 +43,10 @@
                     svg.create("rect", {x: 0, y: 10, width: 800, height: 600, fill: "#202090"});
 
                     gauges = {
-                        outGauge: widgets.gauges.outlet({parent: de, cx: 200, cy: 200, size: 150}),
-                        combGauge: widgets.gauges.compound({parent: de, cx: 400, cy: 200, size: 150}),
-                        hpGauge: widgets.gauges.highPressure({parent: de, cx: 200, cy: 400, size: 150}),
-                        revGauge: widgets.gauges.engineRevs({parent: de, cx: 400, cy: 400, size: 150})
+                        outGauge: widgets.gauges.outlet({parent: de, cx: 200, cy: 200, radius: 75}),
+                        combGauge: widgets.gauges.compound({parent: de, cx: 400, cy: 200, radius: 75}),
+                        hpGauge: widgets.gauges.highPressure({parent: de, cx: 200, cy: 400, radius: 75}),
+                        revGauge: widgets.gauges.engineRevs({parent: de, cx: 400, cy: 400, radius: 75})
                     };
 
                     flow = widgets.gauges.flow({parent: de, cx: 300, cy: 300, width: 70});
