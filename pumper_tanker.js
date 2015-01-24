@@ -36,11 +36,6 @@ var showLog = function () {
 
 
 
-var handleException = function (ex) {
-    var
-        msg = "EX " + typeof ex + ' "' + ex.message + '" ' + ex.fileName + ':' + ex.lineNumber;
-    alert(msg);
-};
 
 
 var svgDocument;
@@ -363,7 +358,7 @@ var model = (function () {
                 daveThing('pumpPresEye', pres.pumpEye);
             }
             catch (ex) {
-                handleException(ex);
+                utils.handleException(ex);
             }
 
         },
@@ -507,15 +502,15 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
         debug.timerInt = utils.timerInterface(jqSvg, 1600, 30, 50, heart);
         jqSvg.text(1510, 120, "hydrant line lengths");
-        debug.hydrantLineLength = utils.numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 0, 1, function (x) {
+        debug.hydrantLineLength = widgets.general.numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 0, 1, function (x) {
             model.setHydrantLengths(x);
         });
         jqSvg.text(1510, 155, "hydrant pressure [kPa]");
-        debug.hydrantPressure = utils.numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 0, 500, function (x) {
+        debug.hydrantPressure = widgets.general.numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 0, 500, function (x) {
             model.setHydrantPres(x);
         });
         jqSvg.text(1510, 190, "hydrant line rise [m]");
-        debug.hydrantLineRise = utils.numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, 0, function (x) {
+        debug.hydrantLineRise = widgets.general.numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, 0, function (x) {
             model.setHydrantLineRise(x);
         });
 
@@ -526,7 +521,7 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
     }
     catch (ex) {
-        handleException(ex);
+        utils.handleException(ex);
     }
 };
 

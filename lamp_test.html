@@ -11,6 +11,7 @@
         <script src="3rdParty/jquery.svg.js"></script>
 
         <script src="utils.js"></script>
+        <script src="spinner.js"></script>
         <script src="svg.js"></script>
         <script src="lamps.js"></script>
         <script src="widgets_controls.js"></script>
@@ -78,7 +79,7 @@
                         title: "WATER"
                     });
 
-                    utils.numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function (a) {
+                    widgets.general.numSpinner(x, 600, 400, 100, 30, 0, 1.0, 0.03, 2, 0, function (a) {
                         lev.set(a);
                     });
 

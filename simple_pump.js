@@ -10,13 +10,6 @@
 
 
 
-var handleException = function (ex) {
-    var
-    msg = "EX " + typeof ex + ' "' + ex.message + '" ' + ex.fileName + ':' + ex.lineNumber + "\n" + ex.stack;
-    alert(msg);
-};
-
-
 var svgDocument;
 var svgns = "http://www.w3.org/2000/svg";
 var xlinkNS = "http://www.w3.org/1999/xlink";
@@ -127,7 +120,7 @@ function tick() {
         hydraulicTick();
     }
     catch (ex) {
-        handleException(ex);
+        utils.handleException(ex);
     }
 
 }
@@ -169,7 +162,7 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
     }
     catch (ex) {
-        handleException(ex);
+        utils.handleException(ex);
     }
 };
 

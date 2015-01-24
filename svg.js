@@ -80,29 +80,29 @@ mySvg.rgb2str = function (rgb) {
 
 
 mySvg.createText = function (settings) {
-    var text, i, line, span, textArray;
+    var text, i, line = [], span = [], textArray;
     text = mySvg.create("text", {
         "text-anchor": settings.align || "middle",
         "font-family": "arial",
         "font-size": settings.fontSize || 20,
         y: settings.yTop,
-        x: settings.cx,
+        x: settings.x,
         fill: settings.color || "white"
     });
 
     textArray = (typeof settings.text === 'string') ? [settings.text] : settings.text;
     for (i = 0; i < textArray.length; i += 1) {
-        line = mySvg.document.createTextNode(textArray[i]);
-        span = mySvg.document.createElementNS(mySvg.ns, "tspan");
-        span.appendChild(line);
-        mySvg.setAttrs(span, {
+        line[i] = mySvg.document.createTextNode(textArray[i]);
+        span[i] = mySvg.document.createElementNS(mySvg.ns, "tspan");
+        span[i].appendChild(line[i]);
+        mySvg.setAttrs(span[i], {
             dy: i ? "1em" : "0em",
-            x: settings.cx
+            x: settings.x
         });
-        text.appendChild(span);
+        text.appendChild(span[i]);
     }
 
-    return text;
+    return {text: text, spans: span, lines: line};
 };
 
 

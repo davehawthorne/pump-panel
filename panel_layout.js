@@ -39,6 +39,7 @@ var
         og: 700,
         ov: 900,
         lamps: 650,
+        lampText: 700,
         right: 1200
     },
 
@@ -183,6 +184,29 @@ function paintPanel() {
         y2: y.ptb,
         style: style.valve(colour.pump)
     });
+
+    svg.createText({
+        x: x.lampText,
+        yTop: y.lamps,
+        color: colour.text,
+        align: "start",
+        text: 'Cavitation'
+    });
+    svg.createText({
+        x: x.lampText,
+        yTop: y.lamps + 1 * dim.lampSpacing,
+        color: colour.text,
+        align: "start",
+        text: 'Hose Collapse'
+    });
+    svg.createText({
+        x: x.lampText,
+        yTop: y.lamps + 2 * dim.lampSpacing,
+        color: colour.text,
+        align: "start",
+        text: 'Engine Red Lining'
+    });
+
 }
 
 

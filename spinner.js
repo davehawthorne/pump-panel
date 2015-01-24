@@ -1,9 +1,11 @@
 "use strict";
 /*global svg */
-var spinner = (function () {
+
+var widgets = window.widgets || {};
+
+widgets.general = (function () {
     var spinnerBase = function (crap, x, y, w, h, init, incFn, decFn, callback) {
         var
-            //TEMP!!!g = svg.group(),
             r = svg.create("rect", {
                 x: x,
                 y: y,

@@ -201,7 +201,7 @@ widgets.controls.toggleSwitch = function (settings) {
     };
 
     priv.text = svg.createText({
-        cx: priv.cx,
+        x: priv.cx,
         yTop: priv.cy + priv.width * 2,
         text: settings.text
     });
@@ -248,7 +248,7 @@ widgets.controls.pushButton = function (settings) {
         i, line, span;
 
     priv.text = svg.createText({
-        cx: priv.cx,
+        x: priv.cx,
         yTop: priv.cy + priv.width,
         text: settings.text
     });

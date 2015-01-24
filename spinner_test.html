@@ -21,9 +21,9 @@
             function test(jqSvg) {
                 try {
                     svg.setDocument(jqSvg.root());
-                    spinner.numSpinner(jqSvg, 100, 10, 150, 50, 1, 15, 1, 0, 1, function (x) {
+                    widgets.general.numSpinner(jqSvg, 100, 10, 150, 50, 1, 15, 1, 0, 1, function (x) {
                     });
-                    spinner.listSpinner(jqSvg, 100, 80, 150, 50, ["One", "Two", "three"], function (x) {
+                    widgets.general.listSpinner(jqSvg, 100, 80, 150, 50, ["One", "Two", "three"], function (x) {
                     });
                 }
                 catch (ex) {

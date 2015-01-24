@@ -183,7 +183,7 @@ widgets.gauges.levelIndicator = function (settings) {
     svg.createText({
         text: settings.title,
         yTop: priv.yTop - priv.lampDist,
-        cx: priv.cx + priv.lampDist / 2
+        x: priv.cx + priv.lampDist / 2
     });
 
     for (i = 0; i < 5; i += 1) {
@@ -198,7 +198,7 @@ widgets.gauges.levelIndicator = function (settings) {
             interval: 500
         });
         priv.level[i] = svg.createText({
-            cx: priv.cx + priv.lampDist,
+            x: priv.cx + priv.lampDist,
             yTop: y,
             text: levelText[i]
         });
