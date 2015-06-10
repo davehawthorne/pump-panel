@@ -4,7 +4,7 @@
 var widgets = window.widgets || {};
 
 widgets.general = (function () {
-    var spinnerBase = function (crap, x, y, w, h, init, incFn, decFn, callback) {
+    var spinnerBase = function (x, y, w, h, init, incFn, decFn, callback) {
         var
             r = svg.create("rect", {
                 x: x,
@@ -64,49 +64,67 @@ widgets.general = (function () {
     };
 
     return {
-        numSpinner: function (svg, x, y, w, h, min, max, step, digits, initial, callback) {
+        numSpinner: function (s) {
             var
-                val = initial,
+                min = s.min || 0,
+                val = s.hasOwnProperty('initial') ? s.initial : min,
+                step = s.step || 1,
+                digits = s.digits || 0,
+                callback = s.callback || 0,
+                tail = s.hasOwnProperty('units') ? s.units : '',
+
+                text = function () {
+                    return val.toFixed(digits) + tail;
+                },
+
                 inc = function () {
-                    if (val >= max) {
+                    if (val >= s.max) {
                         return null;
                     }
-                    val = Math.min(max, val + step);
-                    return val.toFixed(digits);
+                    val = Math.min(s.max, val + step);
+                    return text();
                 },
                 dec = function () {
                     if (val <= min) {
                         return null;
                     }
                     val = Math.max(min, val - step);
-                    return val.toFixed(digits);
+                    return text();
                 };
-            spinnerBase(svg, x, y, w, h, val.toFixed(digits), inc, dec, callback);
+            spinnerBase(s.x, s.y, s.width, s.height, text(), inc, dec, callback);
 
             return {
-                value : function () {
+                value: function () {
                     return val;
+                },
+                setCallback: function (cb) {
+                    callback = cb;
                 }
             };
         },
 
 
-        listSpinner: function (svg, x, y, w, h, vals, callback) {
+        listSpinner: function (s) {
             var
                 i = 0,
-                max = vals.length - 1,
+                max = s.values.length - 1,
+                callback = s.callback || 0,
+
                 inc = function () {
                     i = (i < max) ? (i + 1) : 0;
-                    return vals[i];
+                    return s.values[i];
                 },
-                dec = function (val) {
+                dec = function () {
                     i = (i > 0) ? (i - 1) : max;
-                    return vals[i];
+                    return s.values[i];
                 };
-            spinnerBase(svg, x, y, w, h, vals[0], inc, dec, callback);
+            spinnerBase(s.x, s.y, s.width, s.height, s.values[0], inc, dec, callback);
             return {
                 value : function () {
                     return i;
+                },
+                setCallback : function (cb) {
+                    callback = cb;
                 }
             };
         }
