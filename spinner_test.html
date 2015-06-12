@@ -7,23 +7,18 @@
 
         <title>Spinner Test</title>
 
-        <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
-
-        <script src="3rdParty/jquery.js"></script>
-        <script src="3rdParty/jquery.svg.js"></script>
-
         <script src="utils.js"></script>
         <script src="svg.js"></script>
         <script src="spinner.js"></script>
         <script src="widgets_gauges.js"></script>
         <script>
-            /*global svg widgets utils $*/
+            /*global svg widgets utils*/
             "use strict";
-            function test(jqSvg) {
+            function loadSvg() {
                 var outGauge;
                 try {
 
-                    svg.setDocument(jqSvg.root());
+                    svg.setRoot(document.getElementById("svg1"));
 
                     outGauge = widgets.gauges.outlet({cx: 400, cy: 80, radius: 75});
 
@@ -93,22 +88,12 @@
             }
 
 
-
-            $(function () {
-                $('#svg1').svg({
-                    onLoad: test,
-                    settings: {width: 800, height: 600}
-                });
-            });
-
-
-
         </script>
 
     </head>
-    <body>
+    <body onload="loadSvg()">
         <h1>Spinner Test</h1>
         <p><a href="./index.html">test index</a></p>
-        <div id="svg1"></div>
+        <svg id="svg1" width="800" height="600"/>
     </body>
 </html>

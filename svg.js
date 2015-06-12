@@ -4,7 +4,7 @@
 var mySvg = {
     ns: "http://www.w3.org/2000/svg",
     xlinkNs: "http://www.w3.org/1999/xlink",
-    setDocument: function (root) {
+    setRoot: function (root) {
         mySvg.root = root;
         mySvg.document = root.ownerDocument;
     }
@@ -87,7 +87,8 @@ mySvg.createText = function (settings) {
         "font-size": settings.fontSize || 20,
         y: settings.yTop,
         x: settings.x,
-        fill: settings.color || "white"
+        fill: settings.color || "white",
+        parent: settings.parent
     });
 
     textArray = (typeof settings.text === 'string') ? [settings.text] : settings.text;

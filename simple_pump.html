@@ -5,15 +5,12 @@
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
         <title>Simple Pump Panel Simulation</title>
-        <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
         <style type="text/css">
             table {border-collapse: collapse; border: 2px solid red;}
             th {border: 1px solid red; padding: 10px;}
             td {border: 1px solid red; padding: 10px;}
         </style>
 
-        <script src="3rdParty/jquery.js"></script>
-        <script src="3rdParty/jquery.svg.js"></script>
         <script src="utils.js"></script>
         <script src="svg.js"></script>
         <script src="models.js"></script>
@@ -27,27 +24,20 @@
         <script src="panel_layout.js"></script>
         <script src="spinner.js"></script>
         <script>
-            /*global buildPumpPanel $*/
+            /*global buildPumpPanel svg*/
             "use strict";
 
-            $(function () {
-                $('#pumpPanel').svg({
-                    onLoad: function (s) {
-                        // svg.setDocument(s.root());
-                        // paint();
-                        // bolt(s.root());
-                        buildPumpPanel(s, s.root());
-                    },
-                    settings: { width: 2000, height: 800}
-                });
-            });
+            var loadSvg = function() {
+                svg.setRoot(document.getElementById("svg1"));
+                buildPumpPanel();
+            };
 
         </script>
     </head>
-    <body>
+    <body onload="loadSvg()">
         <h1>Boronia Pumper Tanker Simulation</h1>
         <p><a href="./index.html">test index</a></p>
-        <div id="pumpPanel"></div>
+        <svg id="svg1" width="2000" height="800"/>
     </body>
 </html>
 

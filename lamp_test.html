@@ -7,16 +7,13 @@
 
         <title>Lamp Test</title>
 
-        <script src="3rdParty/jquery.js"></script>
-        <script src="3rdParty/jquery.svg.js"></script>
-
         <script src="utils.js"></script>
         <script src="spinner.js"></script>
         <script src="svg.js"></script>
         <script src="lamps.js"></script>
         <script src="widgets_controls.js"></script>
         <script>
-            /*global utils svg widgets $*/
+            /*global utils svg widgets*/
 
             "use strict";
 
@@ -51,10 +48,11 @@
                     }
                 },
 
-                test = function (x) {
+                loadSvg = function () {
                     var i, j, step = 255 / size;
 
-                    svg.setDocument(x.root());
+                    svg.setRoot(document.getElementById("svg1"));
+
                     svg.create("rect", {x: 0, y: 10, width: 1000, height: 600, fill: "#202090"});
                     widgets.controls.toggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
                     widgets.controls.toggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
@@ -96,19 +94,12 @@
                 };
 
 
-            $(function () {
-                $('#svg1').svg({
-                    onLoad: test,
-                    settings: {width: 1000, height: 600}
-                });
-            });
-
         </script>
 
     </head>
-    <body>
+    <body onload="loadSvg()">
         <h1>Lamp Test</h1>
         <p><a href="./index.html">test index</a></p>
-        <div id="svg1"></div>
+        <svg id="svg1" width="1000" height="600"/>
     </body>
 </html>

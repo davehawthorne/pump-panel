@@ -10,11 +10,6 @@
 
 
 
-var svgDocument;
-var svgns = "http://www.w3.org/2000/svg";
-var xlinkNS = "http://www.w3.org/1999/xlink";
-
-
 var
     panelItems,
     engine,
@@ -138,16 +133,14 @@ var updatePanel = function () {
 };
 
 
-var buildPumpPanel = function (jqSvg, svgDocument) {
-    svg.setDocument(svgDocument);
+var buildPumpPanel = function () {
     try {
         var
-            de = svgDocument.documentElement,
             heart = utils.timerHeart(10);  // ten times per second
 
         paintPanel();
 
-        panelItems = attachWidgets(de);
+        panelItems = attachWidgets(null);
 
         panelItems.outValve.setCallback(setOutValve);
         panelItems.inValve.setCallback(setInValve);
