@@ -115,7 +115,9 @@ widgets.controls.outletValve = function (settings) {
         }
         priv.grabbed = true;
         priv.cursorToCentre = clientY - knobY;
+        priv.activate();
     };
+
     priv.moveHandle = function (clientY) {
         var cy;
         cy = clientY - priv.cursorToCentre;
@@ -134,6 +136,20 @@ widgets.controls.outletValve = function (settings) {
         }
     };
 
+
+    priv.deactivate = function () {
+        svg.change(priv.knob, {
+            r: priv.knobR,
+        });
+    }
+
+    priv.activate = function () {
+        svg.change(priv.knob, {
+            r: priv.knobR * 1.5
+        });
+    }
+
+
     priv.back.addEventListener("mousedown", function (evt) {
         if (evt.preventDefault) {
             evt.preventDefault();
@@ -143,12 +159,14 @@ widgets.controls.outletValve = function (settings) {
 
     priv.back.addEventListener("mouseup", function (evt) {
         priv.grabbed = false;
+        priv.deactivate();
     }, false);
 
     priv.back.addEventListener("mouseout", function (evt) {
         if (priv.grabbed) {
             priv.moveHandle(evt.clientY);
             priv.grabbed = false;
+            priv.deactivate();
         }
     }, false);
 
@@ -157,7 +175,6 @@ widgets.controls.outletValve = function (settings) {
             priv.moveHandle(evt.clientY);
         }
     }, false);
-
 
     return {
         getPosition: function () {
