@@ -5,15 +5,12 @@
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
         <title>Boronia Pumper Tanker Simulation</title>
-        <link rel="stylesheet" type="text/css" href="3rdParty/jquery.svg.css"/>
         <style type="text/css">
             table {border-collapse: collapse; border: 2px solid red;}
             th {border: 1px solid red; padding: 10px;}
             td {border: 1px solid red; padding: 10px;}
         </style>
 
-        <script src="3rdParty/jquery.js"></script>
-        <script src="3rdParty/jquery.svg.js"></script>
         <script src="utils.js"></script>
         <script src="svg.js"></script>
         <script src="models.js"></script>
@@ -26,7 +23,7 @@
         <script src="pumper_tanker.js"></script>
         <script src="spinner.js"></script>
         <script>
-            /*global buildPumpPanel $*/
+            /*global buildPumpPanel svg*/
             "use strict";
 
             function muck() {
@@ -38,23 +35,17 @@
                 table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475<\/option><option value="350">350<\/option><option value="125">125<\/option><\/select>'))));
             }
 
-            function drawIntro(svg) {
-                buildPumpPanel(svg, svg.root());
+            function loadSvg() {
+                svg.setRoot(document.getElementById("svg1"));
+                buildPumpPanel();
                 muck();
             }
 
-            $(function () {
-                $('#pumpPanel').svg({
-                    onLoad: drawIntro,
-                    settings: { width: 2000, height: 800}
-                });
-            });
-
         </script>
     </head>
-    <body>
+    <body onload="loadSvg()">
         <h1>Boronia Pumper Tanker Simulation</h1>
-        <div id="pumpPanel"></div>
+        <svg id="svg1" width="2000" height="800"/>
         <table id="other">
             <tr><th>tank level [l]</th><td id='tankLevel'>-</td></tr>
             <tr><th>ticks</th><td id='ticks'>-</td></tr>

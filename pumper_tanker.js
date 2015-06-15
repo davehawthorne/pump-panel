@@ -23,7 +23,7 @@ var logger = function (a) {
 
 
 function daveThing(name, val) {
-    $('#' + name).html('' + val);
+    //TEMP!!!$('#' + name).html('' + val);
 }
 
 
@@ -409,11 +409,11 @@ var updatePanel = function () {
 };
 
 
-var buildPumpPanel = function (jqSvg, svgDocument) {
-    svg.setDocument(svgDocument);
+var buildPumpPanel = function () {
     try {
         var
-            de = svgDocument.documentElement,
+            de = svg.getRoot(),
+            //TEMP!!! jqSvg = null,
             panel = svg.create("rect", {x: 0, y: 0, width: 1500, height: 800, fill: "#202020"}),
             hpCircle = svg.create("circle", {cx: 350, cy: 180, r: 90, fill: "blue"}),
             combCircle = svg.create("circle", {cx: 600, cy: 180, r: 90, fill: "green"}),
@@ -500,18 +500,51 @@ var buildPumpPanel = function (jqSvg, svgDocument) {
 
         widgets.controls.pushButton({cx: 1600, cy: 550, width: 40, text: ["LOG"], callback: showLog});
 
-        debug.timerInt = utils.timerInterface(jqSvg, 1600, 30, 50, heart);
-        jqSvg.text(1510, 120, "hydrant line lengths");
-        debug.hydrantLineLength = widgets.general.numSpinner(jqSvg, 1700, 100, 100, 30, 1, 15, 1, 0, 1, function (x) {
-            model.setHydrantLengths(x);
+        debug.timerInt = utils.timerInterface(de, 1600, 30, 50, heart);
+        //TEMP!!! jqSvg.text(1510, 120, "hydrant line lengths");
+        debug.hydrantLineLength = widgets.general.numSpinner({
+            x: 1700,
+            y: 100,
+            width: 100,
+            height:30,
+            min: 1,
+            max: 15,
+            initial: 1,
+            digits: 0,
+            step: 1,
+            callback: function (x) {
+                model.setHydrantLengths(x);
+            }
         });
-        jqSvg.text(1510, 155, "hydrant pressure [kPa]");
-        debug.hydrantPressure = widgets.general.numSpinner(jqSvg, 1700, 135, 100, 30, 100, 1200, 100, 0, 500, function (x) {
-            model.setHydrantPres(x);
+        //TEMP!!! jqSvg.text(1510, 155, "hydrant pressure [kPa]");
+        debug.hydrantPressure = widgets.general.numSpinner({
+            x: 1700,
+            y: 135,
+            width: 100,
+            height: 30,
+            min: 100,
+            max: 1200,
+            step: 100,
+            digits: 0,
+            initial: 500,
+            callback: function (x) {
+                model.setHydrantPres(x);
+            }
         });
-        jqSvg.text(1510, 190, "hydrant line rise [m]");
-        debug.hydrantLineRise = widgets.general.numSpinner(jqSvg, 1700, 170, 100, 30, -10, 10, 1, 0, 0, function (x) {
-            model.setHydrantLineRise(x);
+        //TEMP!!! jqSvg.text(1510, 190, "hydrant line rise [m]");
+        debug.hydrantLineRise = widgets.general.numSpinner({
+            x: 1700,
+            y: 170,
+            width: 100,
+            height: 30,
+            min: -10,
+            max: 10,
+            step: 1,
+            digits: 0,
+            initial: 0,
+            callback: function (x) {
+                model.setHydrantLineRise(x);
+            }
         });
 
         logger(['o0', 'o4', 'pres.pumpEye', 'pres.pumpOut', 'tank']);

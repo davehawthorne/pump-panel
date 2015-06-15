@@ -3,7 +3,6 @@
 
 var mySvg = {
     ns: "http://www.w3.org/2000/svg",
-    xlinkNs: "http://www.w3.org/1999/xlink",
     setRoot: function (root) {
         mySvg.root = root;
         mySvg.document = root.ownerDocument;
@@ -29,6 +28,72 @@ mySvg.create = function (type, attributes) {
 };
 
 
+mySvg.makeThing = function (type, names, args) {
+    var
+        element = mySvg.document.createElementNS(mySvg.ns, type),
+        parent = args[0],
+        i,
+        name,
+        attributes = args[names.length + 1];
+
+    for (i = 0; i < names.length; i++) {
+        name = names[i];
+        element.setAttribute(name, args[i + 1]);
+    }
+    if (attributes) {
+        for (name in attributes) {
+            if (typeof attributes[name] !== 'function') {
+                element.setAttribute(name, attributes[name]);
+            }
+        }
+    }
+    parent.appendChild(element);
+    return element;
+};
+
+
+mySvg.circle = function () {
+    return mySvg.makeThing('circle', ['cx', 'cy', 'r'], arguments);
+};
+
+
+mySvg.rect = function () {
+    return mySvg.makeThing('rect', ['x', 'y', 'width', 'height'], arguments);
+};
+
+
+mySvg.group = function () {
+    return mySvg.makeThing('g', [], arguments);
+};
+
+
+mySvg.polygon = function (parent, path, attributes) {
+    var
+        element = mySvg.document.createElementNS(mySvg.ns, 'polygon'),
+        pathStr = mySvg.path(path),
+        name;
+
+    element.setAttribute('points', pathStr);
+    for (name in attributes) {
+        if (typeof attributes[name] !== 'function') {
+            element.setAttribute(name, attributes[name]);
+        }
+    }
+    parent.appendChild(element);
+    return element;
+}
+
+
+mySvg.change = function (item, attributes) {
+    for (name in attributes) {
+        if (typeof attributes[name] !== 'function') {
+            item.setAttribute(name, attributes[name]);
+        }
+    }
+}
+
+
+
 mySvg.path = function (list) {
     var i, str = '', l;
     for (i = 0; i < list.length; i += 1) {
@@ -50,9 +115,9 @@ mySvg.path = function (list) {
 
 
 mySvg.radGrad = function (settings) {
-    var attrs, grad;
-    attrs = utils.copyAttribs(settings, ["id", "fx", "fy", "cx", "cy", "r"]);
-    grad = mySvg.create('radialGradient', attrs);
+    var attributes, grad;
+    attributes = utils.copyAttribs(settings, ["id", "fx", "fy", "cx", "cy", "r"]);
+    grad = mySvg.create('radialGradient', attributes);
     mySvg.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
     mySvg.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
     return grad;
@@ -108,12 +173,10 @@ mySvg.createText = function (settings) {
 
 
 //TEMP!!!
-mySvg.setAttrs = function (element, atts) {
-    var atName;
-    for (atName in atts) {
-        if (typeof atts[atName] !== 'function') {
-            element.setAttribute(atName, atts[atName]);
-        }
-    }
+mySvg.setAttrs = mySvg.change;
+
+
+mySvg.getRoot = function () {
+    return mySvg.root;
 };
 

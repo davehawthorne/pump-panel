@@ -1,5 +1,7 @@
 "use strict";
 
+/*global svg*/
+
 var utils = {};
 
 
@@ -98,11 +100,12 @@ utils.buildRounder = function (decimals) {
 
 
 /// Augments the jquery svg library
-var changeableText = function (svg, parent, initial) {
+var changeableText = function (svg, parent, initial, attributes) {
     var
-        textNode = svg.root().ownerDocument.createTextNode(initial),
-        text = svg.root().ownerDocument.createElementNS("http://www.w3.org/2000/svg", "text");
+        textNode = svg.document.createTextNode(initial),
+        text = svg.document.createElementNS("http://www.w3.org/2000/svg", "text");
 
+    //TEMP!!!svg.change(attributes)
     text.appendChild(textNode);
     parent.appendChild(text);
 
@@ -178,10 +181,10 @@ utils.timerHeart = function (ticksPerSec) {
 };
 
 
-utils.timerInterface = function (svg, x, y, h, heart)
+utils.timerInterface = function (parent, x, y, h, heart)
 {
     var
-        g = svg.group({transform: "translate(" + x + "," + y + ")"}),
+        g = svg.group(parent, {transform: "translate(" + x + "," + y + ")"}),
         fieldDisplays = [],
 
         step = svg.circle(g, h * 0.7, h * 0.15, h * 0.15, {fill: 'blue', stroke: 'black'}),
@@ -247,11 +250,11 @@ utils.timerInterface = function (svg, x, y, h, heart)
             fieldDisplays[field] = changeableText(svg, g, pad2(state[field]));
         }
     }
-    svg.change(fieldDisplays.mins.text, {x: h * 1.1, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
-    svg.change(fieldDisplays.secs.text, {x: h * 2.2, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
-    svg.change(fieldDisplays.subs.text, {x: h * 3.3, y: h * 0.8, fill: 'white', fontSize: h * 0.8});
-    svg.change(fieldDisplays.aver.text, {x: h * 4.4, y: h * 0.4, fill: 'white', fontSize: h * 0.4});
-    svg.change(fieldDisplays.peak.text, {x: h * 4.4, y: h * 0.8, fill: 'white', fontSize: h * 0.4});
+    svg.change(fieldDisplays.mins.text, {x: h * 1.1, y: h * 0.8, fill: 'white', 'font-size': h * 0.8});
+    svg.change(fieldDisplays.secs.text, {x: h * 2.2, y: h * 0.8, fill: 'white', 'font-size': h * 0.8});
+    svg.change(fieldDisplays.subs.text, {x: h * 3.3, y: h * 0.8, fill: 'white', 'font-size': h * 0.8});
+    svg.change(fieldDisplays.aver.text, {x: h * 4.4, y: h * 0.4, fill: 'white', 'font-size': h * 0.4});
+    svg.change(fieldDisplays.peak.text, {x: h * 4.4, y: h * 0.8, fill: 'white', 'font-size': h * 0.4});
 
     update();
 
@@ -291,7 +294,10 @@ utils.setAttrs = function (element, atts) {
 
 utils.handleException = function (ex) {
     var
-        msg = "EX " + typeof ex + ' "' + ex.message + '" ' + ex.fileName + ':' + ex.lineNumber;
+//        err = new Error();
+//    return err.stack;
+//}
+        msg = "EX " + typeof ex + ' "' + ex.message + '" ' + ex.fileName + ':' + ex.lineNumber + '\n' + ex.stack;
     alert(msg);
 };
 
