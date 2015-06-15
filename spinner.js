@@ -4,28 +4,45 @@
 var widgets = window.widgets || {};
 
 widgets.general = (function () {
-    var spinnerBase = function (x, y, w, h, init, incFn, decFn, callback) {
+    var spinnerBase = function (x, y, w, h, init, incFn, decFn, callback, parent) {
         var
+            g = svg.create("g", {
+                parent: parent
+            }),
             r = svg.create("rect", {
                 x: x,
                 y: y,
                 width: w,
-                height: h
+                height: h,
+                parent: g
             }),
 
             up = svg.create("path", {
                 d: svg.path(['M', [x + h * 0.05, y + h * 0.45], [x + h * 0.5, y + h * 0.05], [x + h * 0.95, y + h * 0.45]]),
-                "stroke-width": 0
+                "stroke-width": 0,
+                parent: g
 
             }),
 
             down = svg.create("path", {
                 d: svg.path(['M', [x + h * 0.05, y + h * 0.55], [x + h * 0.5, y + h * 0.95], [x + h * 0.95, y + h * 0.55]]),
-                "stroke-width": 0
+                "stroke-width": 0,
+                parent: g
             }),
 
             val = init,
-            text = svg.createText({text: init, x: x + h * 1.1, yTop: y + h * 0.8, align: 'start', fill: 'white', fontFamily: 'Verdana', fontSize: h * 0.8}),
+
+            text = svg.createText({
+                text: init,
+                x: x + h * 1.1,
+                yTop: y + h * 0.8,
+                align: 'start',
+                fill: 'white',
+                fontFamily: 'Verdana',
+                fontSize: h * 0.8,
+                parent: g
+            }),
+
             change = function (evt, val, key) {
                 evt.preventDefault();
                 if (val === null) {
@@ -91,7 +108,7 @@ widgets.general = (function () {
                     val = Math.max(min, val - step);
                     return text();
                 };
-            spinnerBase(s.x, s.y, s.width, s.height, text(), inc, dec, callback);
+            spinnerBase(s.x, s.y, s.width, s.height, text(), inc, dec, callback, s.parent);
 
             return {
                 value: function () {
@@ -118,7 +135,7 @@ widgets.general = (function () {
                     i = (i > 0) ? (i - 1) : max;
                     return s.values[i];
                 };
-            spinnerBase(s.x, s.y, s.width, s.height, s.values[0], inc, dec, callback);
+            spinnerBase(s.x, s.y, s.width, s.height, s.values[0], inc, dec, callback, s.parent);
             return {
                 value : function () {
                     return i;
