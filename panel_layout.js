@@ -207,6 +207,13 @@ function paintPanel() {
         text: 'Engine Red Lining'
     });
 
+    svg.createText({
+        x: x.p,
+        yTop: y.gc + dim.rpm,
+        color: colour.text,
+        align: "middle",
+        text: 'Flow l/min'
+    });
 }
 
 
@@ -280,6 +287,11 @@ function attachWidgets(de) {
             cx: x.ov,
             sideways: sideways(x.ov)
         }),
+        outFlow: widgets.gauges.flow({
+            cx: x.p,
+            cy: y.gc,
+            width: dim.rpm * 1.5
+        }),
         cavitation: addLamp(0, colour.redLamp),
         hoseCollapse: addLamp(1, colour.blueLamp),
         modelFail: addLamp(2, colour.greenLamp)
@@ -287,3 +299,5 @@ function attachWidgets(de) {
 
     };
 }
+
+
