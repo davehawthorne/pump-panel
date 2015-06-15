@@ -452,6 +452,7 @@ widgets.gauges.flow = function (settings) {
         x: priv.cx,
         y: priv.cy,
         "font-family": "arial",
+        "font-size": settings.width / 4,
         fill: "#FF0000"
     });
     priv.textElem.appendChild(priv.textNode);
