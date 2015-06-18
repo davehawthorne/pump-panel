@@ -294,9 +294,10 @@ function attachWidgets(de) {
         }),
         cavitation: addLamp(0, colour.redLamp),
         hoseCollapse: addLamp(1, colour.blueLamp),
-        modelFail: addLamp(2, colour.greenLamp)
+        modelFail: addLamp(2, colour.greenLamp),
 
-
+        hydrantMenu: doHydrantMenu(0, 0),
+        attackMenu: doAttackMenu(300, 0)
     };
 }
 
