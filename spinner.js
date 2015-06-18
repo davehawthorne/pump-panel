@@ -4,11 +4,12 @@
 var widgets = window.widgets || {};
 
 widgets.general = (function () {
-    var spinnerBase = function (x, y, w, h, init, incFn, decFn, callback, parent) {
+    var spinnerBase = function (x, y, w, h, init, incFn, decFn, parent) {
         var
             g = svg.create("g", {
                 parent: parent
             }),
+
             r = svg.create("rect", {
                 x: x,
                 y: y,
@@ -50,9 +51,6 @@ widgets.general = (function () {
                     text.text.setAttribute('fill', 'red');
                 } else {
                     text.lines[0].nodeValue = val;
-                    if (callback) {
-                        callback(val);
-                    }
                 }
                 key.setAttribute('fill', 'red');
             },
@@ -99,6 +97,9 @@ widgets.general = (function () {
                         return null;
                     }
                     val = Math.min(s.max, val + step);
+                    if (callback) {
+                        callback(val);
+                    }
                     return text();
                 },
                 dec = function () {
@@ -106,9 +107,12 @@ widgets.general = (function () {
                         return null;
                     }
                     val = Math.max(min, val - step);
+                    if (callback) {
+                        callback(val);
+                    }
                     return text();
                 };
-            spinnerBase(s.x, s.y, s.width, s.height, text(), inc, dec, callback, s.parent);
+            spinnerBase(s.x, s.y, s.width, s.height, text(), inc, dec, s.parent);
 
             return {
                 value: function () {
@@ -116,6 +120,7 @@ widgets.general = (function () {
                 },
                 setCallback: function (cb) {
                     callback = cb;
+                    callback(val);
                 }
             };
         },
@@ -129,19 +134,27 @@ widgets.general = (function () {
 
                 inc = function () {
                     i = (i < max) ? (i + 1) : 0;
+                    if (callback) {
+                        callback(i);
+                    }
+
                     return s.values[i];
                 },
                 dec = function () {
                     i = (i > 0) ? (i - 1) : max;
+                    if (callback) {
+                        callback(i);
+                    }
                     return s.values[i];
                 };
-            spinnerBase(s.x, s.y, s.width, s.height, s.values[0], inc, dec, callback, s.parent);
+            spinnerBase(s.x, s.y, s.width, s.height, s.values[0], inc, dec, s.parent);
             return {
-                value : function () {
+                value: function () {
                     return i;
                 },
-                setCallback : function (cb) {
+                setCallback: function (cb) {
                     callback = cb;
+                    callback(i);
                 }
             };
         }

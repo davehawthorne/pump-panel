@@ -182,6 +182,7 @@ widgets.controls.outletValve = function (settings) {
         },
         setCallback: function (callback) {
             priv.callback = callback;
+            callback(priv.pos);
         }
     };
 };

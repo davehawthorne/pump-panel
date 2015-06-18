@@ -197,7 +197,7 @@ function paintPanel() {
         yTop: y.lamps + 1 * dim.lampSpacing,
         color: colour.text,
         align: "start",
-        text: 'Hose Collapse'
+        text: 'Hydrant Hose Collapse'
     });
     svg.createText({
         x: x.lampText,
@@ -205,6 +205,14 @@ function paintPanel() {
         color: colour.text,
         align: "start",
         text: 'Engine Red Lining'
+    });
+
+    svg.createText({
+        x: x.lampText,
+        yTop: y.lamps + 3 * dim.lampSpacing,
+        color: colour.text,
+        align: "start",
+        text: 'Model Fail'
     });
 
     svg.createText({
@@ -294,7 +302,8 @@ function attachWidgets(de) {
         }),
         cavitation: addLamp(0, colour.redLamp),
         hoseCollapse: addLamp(1, colour.blueLamp),
-        modelFail: addLamp(2, colour.greenLamp),
+        redline: addLamp(2, colour.redLamp),
+        modelFail: addLamp(3, colour.greenLamp),
 
         hydrantMenu: doHydrantMenu(0, 0),
         attackMenu: doAttackMenu(300, 0)
