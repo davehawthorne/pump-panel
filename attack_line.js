@@ -80,7 +80,7 @@ modelComponents.attackLine = function () {
         ///
         /// Returns the flow in [l/min]
         getFlow: function (presIn) {
-            var flow, discriminant;
+            var flow, discriminant, presBranch;
             if (!branchOpen) {
                 return 0.0;
             }
@@ -98,7 +98,12 @@ modelComponents.attackLine = function () {
                 // the branch is operating at right flow
                 flow = ratedFlow;
             }
-            return flow;
+            presBranch = presIn - headLoss - totalResistance * flow * flow;
+            return {
+                flow: flow,
+                presBranch: presBranch,
+                underPressure: presBranch < workingPres
+            };
         },
 
 

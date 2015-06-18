@@ -67,6 +67,7 @@ hydraulicTick = function () {
     var
         outlet,
         total = 0.0,
+        branchState,
         inRes;
 
     if (inValve.closed()) {
@@ -91,8 +92,13 @@ hydraulicTick = function () {
     }
 
     if (pres.pumpOut) {
-        total = numAttackLines * attackLine.getFlow(pres.pumpOut);
+        branchState = attackLine.getFlow(pres.pumpOut);
+        pres.branch = branchState.presBranch;
+        if (branchState.underPressure) {
+            panelItems.underPressure.pulse();
+        }
 
+        total = branchState.flow * numAttackLines;
         flow.total = (flow.total + total) / 2;
 
         if (isNaN(flow.total)) {
@@ -100,6 +106,7 @@ hydraulicTick = function () {
             flow.total = 0;
         }
     }
+    //TEMP!!! = attackLine.getBranchPres(total, pres.pumpOut);
 
 };
 
@@ -142,6 +149,7 @@ function tick() {
 var updatePanel = function () {
     var i;
     panelItems.outGauge.showPressure(pres.pumpOut);
+    panelItems.branchGauge.showPressure(pres.branch);
     panelItems.combGauge.showPressure(pres.pumpEye);
     panelItems.revGauge.showPressure(engine.rpm);
     panelItems.outFlow.set(flow.total);

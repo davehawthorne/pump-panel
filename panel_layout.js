@@ -26,8 +26,8 @@ var
         pumpOut: 30,
         control: 10,
         valveHeight: 250,
-        rBevel: 25,
-        rGlobe: 18,
+        rBevel: 20,
+        rGlobe: 15,
         lampSpacing: 60
     },
 
@@ -38,6 +38,7 @@ var
         p: 500,
         og: 700,
         ov: 900,
+        bg: 1100,
         lamps: 650,
         lampText: 700,
         right: 1200
@@ -199,20 +200,20 @@ function paintPanel() {
         align: "start",
         text: 'Hydrant Hose Collapse'
     });
-    svg.createText({
-        x: x.lampText,
-        yTop: y.lamps + 2 * dim.lampSpacing,
-        color: colour.text,
-        align: "start",
-        text: 'Engine Red Lining'
-    });
+    // svg.createText({
+    //     x: x.lampText,
+    //     yTop: y.lamps + 2 * dim.lampSpacing,
+    //     color: colour.text,
+    //     align: "start",
+    //     text: 'Engine Red Lining'
+    // });
 
     svg.createText({
-        x: x.lampText,
-        yTop: y.lamps + 3 * dim.lampSpacing,
+        x: x.bg,
+        yTop: y.gc + dim.gauge,
         color: colour.text,
-        align: "start",
-        text: 'Model Fail'
+        align: "middle",
+        text: 'Branch Pressure'
     });
 
     svg.createText({
@@ -220,7 +221,7 @@ function paintPanel() {
         yTop: y.gc + dim.rpm,
         color: colour.text,
         align: "middle",
-        text: 'Flow l/min'
+        text: 'Total Flow l/min'
     });
 }
 
@@ -233,10 +234,10 @@ function sideways(xLoc) {
 }
 
 
-function addLamp(lampNum, colour) {
+function addLamp(cx, cy, colour) {
     return widgets.gauges.lamp({
-        cx: x.lamps,
-        cy: y.lamps + dim.lampSpacing * lampNum,
+        cx: cx,
+        cy: cy,
         rBevel: dim.rBevel,
         rGlobe: dim.rGlobe,
         interval: 500,
@@ -295,15 +296,22 @@ function attachWidgets(de) {
             cx: x.ov,
             sideways: sideways(x.ov)
         }),
+        branchGauge: widgets.gauges.outlet({
+            parent: de,
+            cx: x.bg,
+            cy: y.gc,
+            radius: dim.rpm
+        }),
         outFlow: widgets.gauges.flow({
             cx: x.p,
             cy: y.gc,
             width: dim.rpm * 1.5
         }),
-        cavitation: addLamp(0, colour.redLamp),
-        hoseCollapse: addLamp(1, colour.blueLamp),
-        redline: addLamp(2, colour.redLamp),
-        modelFail: addLamp(3, colour.greenLamp),
+
+        cavitation: addLamp(x.lamps, y.lamps, colour.redLamp),
+        hoseCollapse: addLamp(x.lamps, y.lamps + dim.lampSpacing, colour.blueLamp),
+        redline: addLamp(x.p + dim.rpm, y.rpm - dim.rpm, colour.redLamp),
+        underPressure: addLamp(x.bg + dim.rpm, y.gc - dim.rpm, colour.redLamp),
 
         hydrantMenu: doHydrantMenu(0, 0),
         attackMenu: doAttackMenu(300, 0)
