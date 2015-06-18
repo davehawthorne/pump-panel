@@ -29,6 +29,9 @@ modelComponents.attackLine = function () {
         ratedFlow = 475, // [l/min]
         kBranch = ratedFlow / workingPres,
         hoseResistance = 0,
+        valveResistance = 0,
+        totalResistance = 0,
+        numLengths = 1,
         branchOpen = false;
 
     return {
@@ -43,9 +46,21 @@ modelComponents.attackLine = function () {
         },
 
 
-        setHoseResistance: function (res) {
-            hoseResistance = res;
+        setValveResistance: function (res) {
+            valveResistance = res;
+            totalResistance = valveResistance + hoseResistance * numLengths;
         },
+
+        setHoseLengthResistance: function (res) {
+            hoseResistance = res;
+            totalResistance = valveResistance + hoseResistance * numLengths;
+        },
+
+        setNumHoseLengths: function (num) {
+            numLengths = num;
+            totalResistance = valveResistance + hoseResistance * numLengths;
+        },
+
         setWorkingPres: function (pres) {
             workingPres = pres;
         },
@@ -69,11 +84,11 @@ modelComponents.attackLine = function () {
             if (!branchOpen) {
                 return 0.0;
             }
-            if (hoseResistance === 0.0) {
+            if (totalResistance === 0.0) {
                 flow = kBranch * (presIn - headLoss);
             } else {
-                discriminant = 1 + 4 * hoseResistance * kBranch * kBranch * (presIn - headLoss);
-                flow = (utils.sqrt(discriminant) - 1) / (2 * hoseResistance * kBranch);
+                discriminant = 1 + 4 * totalResistance * kBranch * kBranch * (presIn - headLoss);
+                flow = (utils.sqrt(discriminant) - 1) / (2 * totalResistance * kBranch);
             }
             if (flow < 0.0) {
                 // no sucking
@@ -88,7 +103,7 @@ modelComponents.attackLine = function () {
 
 
         getBranchPres: function (flow, presIn) {
-            var pres = presIn - headLoss - hoseResistance * flow * flow;
+            var pres = presIn - headLoss - totalResistance * flow * flow;
             if (pres < 0.0) {
                 // no sucking
                 pres = 0.0;

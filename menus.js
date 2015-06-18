@@ -78,7 +78,7 @@ function doAttackMenu(x, y) {
         x: x,
         y: y,
         width: 250,
-        height: 350,
+        height: 400,
         colour: "blue",
         hh: 30,
         title: "Attack Line",
@@ -88,8 +88,18 @@ function doAttackMenu(x, y) {
     return {
         menu: menu,
 
-        branchType: addSpin(menu, 'Branch Type', 'listSpinner', {
-            values: ["Protek 38mm", "Protek 65mm"]
+        branchOption: addSpin(menu, 'Hose and Branch', 'listSpinner', {
+            values: ["38mm & Protek 366", "65mm & Protek 368"]
+        }),
+
+        numAttackLines: addSpin(menu, 'Number of Lines', 'numSpinner', {
+            min: 1,
+            max: 4,
+            initial: 1
+        }),
+
+        nominalFlow: addSpin(menu, 'Flow Rate (l/m)', 'numList', {
+            values: [115, 230, 360, 475]
         }),
 
         length: addSpin(menu, 'Lengths of Hose', 'numSpinner', {
@@ -103,10 +113,6 @@ function doAttackMenu(x, y) {
             max: 10,
             initial: 0,
             units: 'm'
-        }),
-
-        hoseSize: addSpin(menu, 'Hose Size', 'listSpinner', {
-            values: ["38mm", "65mm"]
         }),
 
         hoseState: addSpin(menu, 'Hose Lay State', 'listSpinner', {
