@@ -75,6 +75,11 @@ widgets.general = (function () {
         down.addEventListener("mouseout", clear, false);
 
         clear();
+        return {
+            set: function (val) {
+                text.lines[0].nodeValue = val;
+            }
+        };
 
     };
 
@@ -82,6 +87,7 @@ widgets.general = (function () {
         numSpinner: function (s) {
             var
                 min = s.min || 0,
+                max = s.max,
                 val = s.hasOwnProperty('initial') ? s.initial : min,
                 step = s.step || 1,
                 digits = s.digits || 0,
@@ -93,10 +99,10 @@ widgets.general = (function () {
                 },
 
                 inc = function () {
-                    if (val >= s.max) {
+                    if (val >= max) {
                         return null;
                     }
-                    val = Math.min(s.max, val + step);
+                    val = Math.min(max, val + step);
                     if (callback) {
                         callback(val);
                     }
@@ -129,7 +135,8 @@ widgets.general = (function () {
         listSpinner: function (s) {
             var
                 i = 0,
-                max = s.values.length - 1,
+                values = s.values,
+                max = values.length - 1,
                 callback = s.callback || 0,
 
                 inc = function () {
@@ -138,16 +145,16 @@ widgets.general = (function () {
                         callback(i);
                     }
 
-                    return s.values[i];
+                    return "" + values[i];
                 },
                 dec = function () {
                     i = (i > 0) ? (i - 1) : max;
                     if (callback) {
                         callback(i);
                     }
-                    return s.values[i];
-                };
-            spinnerBase(s.x, s.y, s.width, s.height, s.values[0], inc, dec, s.parent);
+                    return "" + values[i];
+                },
+                baseCmds = spinnerBase(s.x, s.y, s.width, s.height, "" + values[0], inc, dec, s.parent);
             return {
                 value: function () {
                     return i;
@@ -155,9 +162,73 @@ widgets.general = (function () {
                 setCallback: function (cb) {
                     callback = cb;
                     callback(i);
+                },
+                setItems: function (items) {
+                    values = items;
+                    max = items.length - 1;
+                    if (i > max) {
+                        i = max;
+                    }
+                    baseCmds.set("" + values[i]);
+                    if (callback) {
+                        callback(i);
+                    }
+                }
+            };
+        },
+
+
+        numList: function (s) {
+            var
+                i = 0,
+                values = s.values,
+                max = values.length - 1,
+                callback = s.callback || 0,
+
+                inc = function () {
+                    if (i >= max) {
+                        return null;
+                    }
+                    i += 1;
+                    if (callback) {
+                        callback(values[i]);
+                    }
+
+                    return "" + values[i];
+                },
+                dec = function () {
+                    if (i <= 0) {
+                        return null;
+                    }
+                    i -= 1;
+                    if (callback) {
+                        callback(values[i]);
+                    }
+                    return "" + values[i];
+                },
+                baseCmds = spinnerBase(s.x, s.y, s.width, s.height, "" + values[0], inc, dec, s.parent);
+            return {
+                value: function () {
+                    return values[i];
+                },
+                setCallback: function (cb) {
+                    callback = cb;
+                    callback(i);
+                },
+                setItems: function (items) {
+                    values = items;
+                    max = items.length - 1;
+                    if (i > max) {
+                        i = max;
+                    }
+                    baseCmds.set("" + values[i]);
+                    if (callback) {
+                        callback(values[i]);
+                    }
                 }
             };
         }
+
     };
 })();
 
