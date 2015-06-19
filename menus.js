@@ -17,7 +17,7 @@ var addSpin = function (menu, text, type, s) {
     });
     s.x = 10;
     s.y = offset + 30;
-    s.width = 230;
+    s.width = 280;
     s.height = 30;
     s.parent = menu.group();
     offset += 60;
@@ -30,11 +30,11 @@ function doHydrantMenu(x, y) {
     var menu = widgets.menus.collapsible({
         x: x,
         y: y,
-        width: 250,
+        width: 300,
         height: 350,
         colour: "green",
         hh: 30,
-        title: "Hydrant Line",
+        title: "Hydrant Line Menu",
         parent: svg.getRoot()
     });
     offset = 0;
@@ -63,7 +63,7 @@ function doHydrantMenu(x, y) {
         }),
 
         hoseSize: addSpin(menu, 'Hose Size', 'listSpinner', {
-            values: ["65mm", "65 x 2", "90mm", "110mm"]
+            values: ["65mm", "twinned 65mm", "90mm"]
         }),
 
         hoseState: addSpin(menu, 'Hose Lay State', 'listSpinner', {
@@ -77,11 +77,11 @@ function doAttackMenu(x, y) {
     var menu = widgets.menus.collapsible({
         x: x,
         y: y,
-        width: 250,
+        width: 300,
         height: 400,
         colour: "blue",
         hh: 30,
-        title: "Attack Line",
+        title: "Attack Line Menu",
         parent: svg.getRoot()
     });
     offset = 0;

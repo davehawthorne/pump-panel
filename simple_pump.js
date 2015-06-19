@@ -99,14 +99,13 @@ hydraulicTick = function () {
         }
 
         total = branchState.flow * numAttackLines;
-        flow.total = (flow.total + total) / 2;
+        flow.total = (2 * flow.total + total) / 3;
 
         if (isNaN(flow.total)) {
             //TEMP!!!
             flow.total = 0;
         }
     }
-    //TEMP!!! = attackLine.getBranchPres(total, pres.pumpOut);
 
 };
 
@@ -188,8 +187,7 @@ var branchChange = function (i) {
 var hoseResistances = [
     modelComponents.hose.resistance.h65,      // single 65mm
     modelComponents.hose.resistance.h65 / 4,  // twinned 65mm
-    modelComponents.hose.resistance.h90,  // single 90mm
-    modelComponents.hose.resistance.h90 / 2   //110mm  //TEMP!!! guess
+    modelComponents.hose.resistance.h90       // single 90mm
 ];
 
 var hoseLayImpact = [
@@ -205,6 +203,13 @@ var setHydrantLineResistance = function () {
         adjust = hoseLayImpact[menu.hoseState.value()];
     hydrantLine.resistance = menu.length.value() * lengthRes * adjust;
 };
+
+
+var derateAttackLine = function (state) {
+    attackLine.derateHose(hoseLayImpact[state]);
+};
+
+
 
 var buildPumpPanel = function () {
     try {
@@ -238,10 +243,7 @@ var buildPumpPanel = function () {
         panelItems.attackMenu.length.setCallback(attackLine.setNumHoseLengths);
         panelItems.attackMenu.rise.setCallback(attackLine.setRise);
         panelItems.attackMenu.branchOption.setCallback(branchChange);
-        //TEMP!!!panelItems.attackMenu.hoseState.setCallback(attackLine.setHoseDerate);
-
-
-
+        panelItems.attackMenu.hoseState.setCallback(derateAttackLine);
 
         heart.addCallback(tick);
         heart.addCallback(updatePanel);

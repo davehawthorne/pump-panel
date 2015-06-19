@@ -29,10 +29,15 @@ modelComponents.attackLine = function () {
         ratedFlow = 475, // [l/min]
         kBranch = ratedFlow / workingPres,
         hoseResistance = 0,
+        hoseDerating = 0,
         valveResistance = 0,
         totalResistance = 0,
         numLengths = 1,
-        branchOpen = false;
+        branchOpen = false,
+        calcTotalResistance = function () {
+            totalResistance = valveResistance + hoseResistance * numLengths * hoseDerating;
+        };
+
 
     return {
         state: function () {
@@ -48,17 +53,22 @@ modelComponents.attackLine = function () {
 
         setValveResistance: function (res) {
             valveResistance = res;
-            totalResistance = valveResistance + hoseResistance * numLengths;
+            calcTotalResistance();
         },
 
         setHoseLengthResistance: function (res) {
             hoseResistance = res;
-            totalResistance = valveResistance + hoseResistance * numLengths;
+            calcTotalResistance();
         },
 
         setNumHoseLengths: function (num) {
             numLengths = num;
-            totalResistance = valveResistance + hoseResistance * numLengths;
+            calcTotalResistance();
+        },
+
+        derateHose: function (value) {
+            hoseDerating = value;
+            calcTotalResistance();
         },
 
         setWorkingPres: function (pres) {

@@ -39,8 +39,8 @@ var
         og: 700,
         ov: 900,
         bg: 1100,
-        lamps: 650,
-        lampText: 700,
+        lamps: 50,
+        lampText: 80,
         right: 1200
     },
 
@@ -200,13 +200,6 @@ function paintPanel() {
         align: "start",
         text: 'Hydrant Hose Collapse'
     });
-    // svg.createText({
-    //     x: x.lampText,
-    //     yTop: y.lamps + 2 * dim.lampSpacing,
-    //     color: colour.text,
-    //     align: "start",
-    //     text: 'Engine Red Lining'
-    // });
 
     svg.createText({
         x: x.bg,
@@ -314,7 +307,7 @@ function attachWidgets(de) {
         underPressure: addLamp(x.bg + dim.rpm, y.gc - dim.rpm, colour.redLamp),
 
         hydrantMenu: doHydrantMenu(0, 0),
-        attackMenu: doAttackMenu(300, 0)
+        attackMenu: doAttackMenu(x.ov, 0)
     };
 }
 
