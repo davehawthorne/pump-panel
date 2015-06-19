@@ -241,6 +241,11 @@ function addLamp(cx, cy, colour) {
 
 function attachWidgets(de) {
     return {
+        cavitation: addLamp(x.lamps, y.lamps, colour.redLamp),
+        hoseCollapse: addLamp(x.lamps, y.lamps + dim.lampSpacing, colour.blueLamp),
+        redline: addLamp(x.p + dim.rpm, y.rpm - dim.rpm, colour.redLamp),
+        underPressure: addLamp(x.bg + dim.rpm, y.gc - dim.rpm, colour.redLamp),
+
         inValve: widgets.controls.outletValve({
             yTop: y.vt,
             yBot: y.vb,
@@ -300,11 +305,6 @@ function attachWidgets(de) {
             cy: y.gc,
             width: dim.rpm * 1.5
         }),
-
-        cavitation: addLamp(x.lamps, y.lamps, colour.redLamp),
-        hoseCollapse: addLamp(x.lamps, y.lamps + dim.lampSpacing, colour.blueLamp),
-        redline: addLamp(x.p + dim.rpm, y.rpm - dim.rpm, colour.redLamp),
-        underPressure: addLamp(x.bg + dim.rpm, y.gc - dim.rpm, colour.redLamp),
 
         hydrantMenu: doHydrantMenu(0, 0),
         attackMenu: doAttackMenu(x.ov, 0)
