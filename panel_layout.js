@@ -228,7 +228,7 @@ function sideways(xLoc) {
 
 
 function addLamp(cx, cy, colour) {
-    return widgets.gauges.lamp({
+    return new widgets.gauges.lamp({
         cx: cx,
         cy: cy,
         rBevel: dim.rBevel,
@@ -310,5 +310,3 @@ function attachWidgets(de) {
         attackMenu: doAttackMenu(x.ov, 0)
     };
 }
-
-

@@ -71,9 +71,7 @@ class Svg {
 
         element.setAttribute('points', pathStr);
         for (let name in attributes) {
-            if (typeof attributes[name] !== 'function') {
-                element.setAttribute(name, attributes[name]);
-            }
+            element.setAttribute(name, attributes[name]);
         }
         parent.appendChild(element);
         return element;
@@ -99,25 +97,32 @@ class Svg {
     };
 
 
-    radGrad(settings) {
-        const attributes = utils.copyAttribs(settings, ["id", "fx", "fy", "cx", "cy", "r"]);
-        const grad = this.create('radialGradient', attributes);
-        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
-        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
+    radGrad({id, fx, fy, cx, cy, r, c1, c2}) {
+        const grad = this.create('radialGradient', {
+            id: id,
+            fx: fx,
+            fy: fy,
+            cx: cx,
+            cy: cy,
+            r: r
+        });
+
+        this.create('stop', {parent: grad, style: 'stop-color:' + c1, offset: 0});
+        this.create('stop', {parent: grad, style: 'stop-color:' + c2, offset: 1});
         return grad;
     };
 
 
-    linGrad(settings) {
+    linGrad({id, x1, y1, x2, y2, c1, c2}) {
         const grad = this.create('linearGradient', {
-            id: settings.id,
-            x1: settings.x1,
-            y1: settings.y1,
-            x2: settings.x2,
-            y2: settings.y2
+            id: id,
+            x1: x1,
+            y1: y1,
+            x2: x2,
+            y2: y2
         });
-        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
-        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
+        this.create('stop', {parent: grad, style: 'stop-color:' + c1, offset: 0});
+        this.create('stop', {parent: grad, style: 'stop-color:' + c2, offset: 1});
         return grad;
     };
 
@@ -128,20 +133,20 @@ class Svg {
 
 
 
-    createText(settings) {
+    createText({align="middle", fontSize=20, yTop, x, color="white", parent, text, }) {
         let line = [];
         let span = [];
-        const text = this.create("text", {
-            "text-anchor": settings.align || "middle",
+        const textObj = this.create("text", {
+            "text-anchor": align,
             "font-family": "arial",
-            "font-size": settings.fontSize || 20,
-            y: settings.yTop,
-            x: settings.x,
-            fill: settings.color || "white",
-            parent: settings.parent
+            "font-size": fontSize,
+            y: yTop,
+            x: x,
+            fill: color,
+            parent: parent
         });
 
-        const textArray = (typeof settings.text === 'string') ? [settings.text] : settings.text;
+        const textArray = (typeof text === 'string') ? [text] : text;
 
         for (let i = 0; i < textArray.length; i += 1) {
             line[i] = this.document.createTextNode(textArray[i]);
@@ -149,12 +154,12 @@ class Svg {
             span[i].appendChild(line[i]);
             this.setAttrs(span[i], {
                 dy: i ? "1em" : "0em",
-                x: settings.x
+                x: x
             });
-            text.appendChild(span[i]);
+            textObj.appendChild(span[i]);
         }
 
-        return {text: text, spans: span, lines: line};
+        return {text: textObj, spans: span, lines: line};
     };
 
     setRoot(root) {

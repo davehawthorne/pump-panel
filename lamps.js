@@ -24,14 +24,10 @@ if (!widgets.gauges) {
 // Each unilluminated lamp has a radial colour gradient which mimics the external light reflected off
 // its round surface.  One such gradient is generated for each lamp colour and its name is generated
 // from the RGB values.
-// Similarly a guassian blur is created for each lamp colour.  This is used to signify the lamp is on.
+// Similarly a gaussian blur is created for each lamp colour.  This is used to signify the lamp is on.
 widgets.gauges.lampFill = function (rgb, id) {
-    var
-        lampGradCommon = {cx: 0.4, cy: 0.4, fx: 0.25, fy: 0.25, r: 0.25, c1: 'white'},
-        dullColour = [Math.round(rgb[0] / 2), Math.round(rgb[1] / 2), Math.round(rgb[2] / 2)],
-        glow,
-        globe,
-        matrixStr;
+    const lampGradCommon = {cx: 0.4, cy: 0.4, fx: 0.25, fy: 0.25, r: 0.25, c1: 'white'};
+    const dullColour = [Math.round(rgb[0] / 2), Math.round(rgb[1] / 2), Math.round(rgb[2] / 2)];
 
     if (!widgets.gauges.fills) {
         svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'white', c2: 'grey', id: "convexLampBevelFill"});
@@ -41,12 +37,12 @@ widgets.gauges.lampFill = function (rgb, id) {
     }
 
     if (!widgets.gauges.fills[id]) {
-        globe = svg.radGrad(utils.shallowMerge(lampGradCommon, {
+        const globe = svg.radGrad(utils.shallowMerge(lampGradCommon, {
             c2: svg.rgb2str(dullColour),
             id: 'globe' + id
         }));
-        glow = svg.create('filter', {id: 'glow' + id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
-        matrixStr =
+        const glow = svg.create('filter', {id: 'glow' + id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
+        const matrixStr =
             "0 0 0 " + (rgb[0] / 255).toString() + " 0 " +
             "0 0 0 " + (rgb[1] / 255).toString() + " 0 " +
             "0 0 0 " + (rgb[2] / 255).toString() + " 0 " +
@@ -66,97 +62,111 @@ widgets.gauges.lampFill = function (rgb, id) {
 // - cx, cy: the location of the lamp centre
 // - rBevel, rGlobe: the radii of the components, bevel should be bigger than globe
 // - colour: a three value array containing the RGB value of the illuminated globe
-//   (extingished lamp has these values halved.)
+//   (extinguished lamp has these values halved.)
 //
 // The glow of the lamp, the shine of the bevel and the shine of the unlit lamp
-// is acheived with the lampFill method.
-widgets.gauges.lamp = function (settings) {
-    var
-        priv = utils.copyAttribs(settings, ['cx', 'cy', 'rBevel', 'rGlobe', 'colour', 'interval']),
-        rgb = priv.colour,
-        id = 'R' + rgb[0] + 'G' + rgb[1] + 'B' + rgb[2];
+// is achieved with the lampFill method.
+widgets.gauges.lamp = class {
 
-    widgets.gauges.lampFill(rgb, id);
+    #lampLit;
+    #id;
+    #convexBevel;
+    #concaveBevel;
+    #bulb;
+    #glow;
+    #timer;
+    #interval;
+    #flashState;
 
-    priv.lampLit = false;
-    priv.convexBevel = svg.create("circle", {
-        parent: settings.parent,
-        cx: priv.cx,
-        cy: priv.cy,
-        r: priv.rBevel,
-        stroke: "black",
-        fill: "url(#convexLampBevelFill)"
-    });
-    priv.concaveBevel = svg.create("circle", {
-        cx: priv.cx,
-        cy: priv.cy,
-        r: (priv.rBevel + priv.rGlobe) / 2,
-        stroke: "none",
-        fill: "url(#concaveLampBevelFill)"
-    });
-    priv.bulb = svg.create("circle", {
-        cx: priv.cx,
-        cy: priv.cy,
-        r: priv.rGlobe,
-        stroke: "none",
-        fill: "url(#globe" + id + ")"
-    });
-    priv.glow = svg.create("circle", {
-        cx: priv.cx,
-        cy: priv.cy,
-        r: priv.rBevel,
-        stroke: "none",
-        filter: "url(#glow" + id + ")",
-        visibility: 'hidden'
-    });
 
-    priv.clearTimer = function () {
-        if (priv.timer) {
-            clearInterval(priv.timer);
+    constructor({cx, cy, rBevel, rGlobe, colour, interval}) {
+
+        this.#interval = interval;
+        this.#id = 'R' + colour[0] + 'G' + colour[1] + 'B' + colour[2];
+        widgets.gauges.lampFill(rgb, this.#id);
+
+        this.#lampLit = false;
+        this.#convexBevel = svg.create("circle", {
+            parent: settings.parent,
+            cx: cx,
+            cy: cy,
+            r: rBevel,
+            stroke: "black",
+            fill: "url(#convexLampBevelFill)"
+        });
+        this.#concaveBevel = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: (rBevel + rGlobe) / 2,
+            stroke: "none",
+            fill: "url(#concaveLampBevelFill)"
+        });
+        this.#bulb = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: rGlobe,
+            stroke: "none",
+            fill: "url(#globe" + this.#id + ")"
+        });
+        this.#glow = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: rBevel,
+            stroke: "none",
+            filter: "url(#glow" + this.#id + ")",
+            visibility: 'hidden'
+        });
+    };
+
+    #clearTimer() {
+        if (this.#timer) {
+            clearInterval(this.#timer);
         }
-        priv.timer = null;
+        this.#timer = null;
     };
 
-    priv.setTimer = function (callback) {
-        priv.timer = setInterval(callback, priv.interval);
-    };
-
-    priv.set = function (on) {
-        if (priv.lampLit !== on) {
-            priv.glow.setAttribute('visibility', on ? 'inherit' : 'hidden');
-            priv.lampLit = on;
+    #setLampState(on) {
+        if (this.#lampLit !== on) {
+            this.#glow.setAttribute('visibility', on ? 'inherit' : 'hidden');
+            this.#lampLit = on;
         }
     };
 
-    priv.pulseFunc = function () {
-        priv.clearTimer();
-        priv.set(false);
+    #pulseFunc() {
+        this.#clearTimer();
+        this.#setLampState(false);
     };
 
-    priv.flashFunc = function () {
-        priv.set(!priv.lampLit);
+    #flashFunc() {
+        this.#setLampState(!this.#lampLit);
     };
 
-    return {
-        set: function (on) {
-            priv.clearTimer();
-            if (priv.lampLit !== on) {
-                priv.set(on);
-                priv.lampLit = on;
-            }
-        },
-        pulse: function () {
-            priv.clearTimer();
-            priv.set(true);
-            priv.setTimer(priv.pulseFunc);
-
-        },
-        flash: function () {
-            priv.clearTimer();
-            priv.flashState = true;
-            priv.set(true);
-            priv.setTimer(priv.flashFunc);
+    set(on) {
+        this.#clearTimer();
+        if (this.#lampLit !== on) {
+            this.#setLampState(on);
+            this.#lampLit = on;
         }
+    };
+
+    pulse() {
+        this.#clearTimer();
+        this.#setLampState(true);
+        this.#timer = setInterval(
+            () => this.#pulseFunc(),
+            this.#interval
+        );
+
+    };
+
+    flash() {
+        this.#clearTimer();
+        this.#flashState = true;
+        this.#setLampState(true);
+        this.#timer = setInterval(
+            () => this.#flashFunc(),
+            this.#interval
+        );
     };
 };
 
@@ -167,79 +177,73 @@ widgets.gauges.lamp = function (settings) {
 // 25% - 50%   1 amber on
 // <25%        red on
 // 0%          red flashing
-widgets.gauges.levelIndicator = function (settings) {
-    var
-        priv = {
-            currentLampsOn: 0,
-            lampDist: settings.lampDist,
-            cx: settings.cx,
-            yTop: settings.yTop,
-            lamp: [],
-            level: []
-        },
-        levelText = ["EMPTY", "1/4", "1/2", "3/4", "FULL"],
-        i, y;
+widgets.gauges.levelIndicator = class {
 
-    svg.createText({
-        text: settings.title,
-        yTop: priv.yTop - priv.lampDist,
-        x: priv.cx + priv.lampDist / 2
-    });
+    #lamp = [];
+    #level = [];
+    #title;
+    #currentLampsOn = 0;
 
-    for (i = 0; i < 5; i += 1) {
-        y = priv.yTop + (4 - i) * priv.lampDist;
-        priv.lamp[i] = widgets.gauges.lamp({
-            cx: priv.cx,
-            cy: y,
-            rBevel: 20,
-            rGlobe: 13,
-            colourId: i ? "Amber" : "Red",
-            colour: i ? [255, 127, 0] : [255, 0, 0],
-            interval: 500
+    constructor({lampDist, cx, yTop, title}) {
+        const levelText = ["EMPTY", "1/4", "1/2", "3/4", "FULL"];
+
+        this.#title = svg.createText({
+            text: title,
+            yTop: yTop - lampDist,
+            x: cx + lampDist / 2
         });
-        priv.level[i] = svg.createText({
-            x: priv.cx + priv.lampDist,
-            yTop: y,
-            text: levelText[i]
-        });
-    }
-    priv.lamp[0].set(true);
-    return {
-        set: function (level) {
-            if (level < 0 || level > 1) {
-                throw {name: 'badParam', message: 'bad level fill:' + level.toString()};
-            }
 
-
-
-            var lampsOn;
-            if (level > 0.95) {
-                lampsOn = 4;
-            } else if (level < 0.05) {
-                lampsOn = -1;
-            } else {
-                lampsOn = Math.floor(level * 4);
-            }
-
-            if (lampsOn === priv.currentLampsOn) {
-                return;
-            }
-
-            for (i = 1; i <= lampsOn; i += 1) {
-                priv.lamp[i].set(true);
-            }
-            for (i = lampsOn + 1; i <= 4; i += 1) {
-                priv.lamp[i].set(false);
-            }
-            if (lampsOn > 0) {
-                priv.lamp[0].set(false);
-            } else if (lampsOn === 0) {
-                priv.lamp[0].set(true);
-            } else {
-                priv.lamp[0].flash();
-            }
-            priv.currentLampsOn = lampsOn;
+        for (let i = 0; i < 5; i += 1) {
+            const y = yTop + (4 - i) * lampDist;
+            this.#lamp[i] = new widgets.gauges.lamp({
+                cx: cx,
+                cy: y,
+                rBevel: 20,
+                rGlobe: 13,
+                colourId: i ? "Amber" : "Red",
+                colour: i ? [255, 127, 0] : [255, 0, 0],
+                interval: 500
+            });
+            this.#level[i] = svg.createText({
+                x: cx + lampDist,
+                yTop: y,
+                text: levelText[i]
+            });
+            this.#lamp[0].set(true);
         }
     };
-};
 
+    set(level) {
+        if (level < 0.0 || level > 1.0) {
+            throw {name: 'badParam', message: 'bad level fill:' + level.toString()};
+        }
+
+        let lampsOn;
+        if (level > 0.95) {
+            lampsOn = 4;
+        } else if (level < 0.05) {
+            lampsOn = -1;
+        } else {
+            lampsOn = Math.floor(level * 4);
+        }
+
+        if (lampsOn === this.#currentLampsOn) {
+            return;
+        }
+
+        for (let i = 1; i <= lampsOn; i += 1) {
+            this.#lamp[i].set(true);
+        }
+        for (let i = lampsOn + 1; i <= 4; i += 1) {
+            this.#lamp[i].set(false);
+        }
+        if (lampsOn > 0) {
+            this.#lamp[0].set(false);
+        } else if (lampsOn === 0) {
+            this.#lamp[0].set(true);
+        } else {
+            this.#lamp[0].flash();
+        }
+        this.#currentLampsOn = lampsOn;
+    };
+};
