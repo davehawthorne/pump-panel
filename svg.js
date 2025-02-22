@@ -1,182 +1,172 @@
-/*global utils*/
-"use strict";
+// "use strict";
 
-var mySvg = {
-    ns: "http://www.w3.org/2000/svg",
-    setRoot: function (root) {
-        mySvg.root = root;
-        mySvg.document = root.ownerDocument;
+class Svg {
+    namespace = "http://www.w3.org/2000/svg"
+
+    constructor() {
+        // this.root = root;
+        // console.log(this.root);  //FIXME
+        // this.document = this.root.ownerDocument; //FIXME what's this???
+        this.setAttrs = this.change;  //FIXME remove
     }
-},
-svg = mySvg;
 
+    create(type, attributes) {
+        const element = this.document.createElementNS(this.namespace, type),
+        parent = attributes.parent || this.root;
 
-mySvg.create = function (type, attributes) {
-    var
-        element = mySvg.document.createElementNS(mySvg.ns, type),
-        attrName,
-        parent = attributes.parent || mySvg.root;
-
-    for (attrName in attributes) {
-        if (attrName !== 'parent' && typeof attributes[attrName] !== 'function') {
+        for (let attrName in attributes) {
+            if (attrName === 'parent') {        //FIXME
+                continue;
+            }
             element.setAttribute(attrName, attributes[attrName]);
+        }
+
+        parent.appendChild(element);
+        return element;
+    }
+
+    change(item, attributes) {
+        for (let name in attributes) {
+            item.setAttribute(name, attributes[name]);
         }
     }
 
-    parent.appendChild(element);
-    return element;
-};
+    makeThing(type, names, args) {
+        const element = this.document.createElementNS(this.namespace, type);
+        const parent = args[0];
+        const attributes = args[names.length + 1];
+
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            element.setAttribute(name, args[i + 1]);    //FIXME yuck
+        }
+        if (attributes) {
+            for (let name in attributes) {
+                element.setAttribute(name, attributes[name]);
+            }
+        }
+        parent.appendChild(element);
+        return element;
+    };
 
 
-mySvg.makeThing = function (type, names, args) {
-    var
-        element = mySvg.document.createElementNS(mySvg.ns, type),
-        parent = args[0],
-        i,
-        name,
-        attributes = args[names.length + 1];
+    circle() {
+        return this.makeThing('circle', ['cx', 'cy', 'r'], arguments);
+    };
 
-    for (i = 0; i < names.length; i++) {
-        name = names[i];
-        element.setAttribute(name, args[i + 1]);
-    }
-    if (attributes) {
-        for (name in attributes) {
+
+    rect() {
+        return this.makeThing('rect', ['x', 'y', 'width', 'height'], arguments);
+    };
+
+
+    group() {
+        return this.makeThing('g', [], arguments);
+    };
+
+
+    polygon(parent, path, attributes) {
+        const element = this.document.createElementNS(this.namespace, 'polygon');
+        const pathStr = this.path(path);
+
+        element.setAttribute('points', pathStr);
+        for (let name in attributes) {
             if (typeof attributes[name] !== 'function') {
                 element.setAttribute(name, attributes[name]);
             }
         }
+        parent.appendChild(element);
+        return element;
     }
-    parent.appendChild(element);
-    return element;
-};
 
-
-mySvg.circle = function () {
-    return mySvg.makeThing('circle', ['cx', 'cy', 'r'], arguments);
-};
-
-
-mySvg.rect = function () {
-    return mySvg.makeThing('rect', ['x', 'y', 'width', 'height'], arguments);
-};
-
-
-mySvg.group = function () {
-    return mySvg.makeThing('g', [], arguments);
-};
-
-
-mySvg.polygon = function (parent, path, attributes) {
-    var
-        element = mySvg.document.createElementNS(mySvg.ns, 'polygon'),
-        pathStr = mySvg.path(path),
-        name;
-
-    element.setAttribute('points', pathStr);
-    for (name in attributes) {
-        if (typeof attributes[name] !== 'function') {
-            element.setAttribute(name, attributes[name]);
+    path(list) {
+        let str = '';
+        for (let i = 0; i < list.length; i += 1) {
+            const l = list[i];
+            switch (typeof list[i]) {
+            case 'string':
+            case 'number':
+                str += l + ' ';
+                break;
+            case 'object':
+                str += l[0] + ',' + l[1] + ' ';
+                break;
+            default:
+                throw new Error('bad list: ' + list);
+            }
         }
-    }
-    parent.appendChild(element);
-    return element;
-}
+        return str.trim();
+    };
 
 
-mySvg.change = function (item, attributes) {
-    for (name in attributes) {
-        if (typeof attributes[name] !== 'function') {
-            item.setAttribute(name, attributes[name]);
-        }
-    }
-}
+    radGrad(settings) {
+        const attributes = utils.copyAttribs(settings, ["id", "fx", "fy", "cx", "cy", "r"]);
+        const grad = this.create('radialGradient', attributes);
+        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
+        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
+        return grad;
+    };
 
 
-
-mySvg.path = function (list) {
-    var i, str = '', l;
-    for (i = 0; i < list.length; i += 1) {
-        l = list[i];
-        switch (typeof list[i]) {
-        case 'string':
-        case 'number':
-            str += l + ' ';
-            break;
-        case 'object':
-            str += l[0] + ',' + l[1] + ' ';
-            break;
-        default:
-            throw new Error('bad list: ' + list);
-        }
-    }
-    return str.trim();
-};
-
-
-mySvg.radGrad = function (settings) {
-    var attributes, grad;
-    attributes = utils.copyAttribs(settings, ["id", "fx", "fy", "cx", "cy", "r"]);
-    grad = mySvg.create('radialGradient', attributes);
-    mySvg.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
-    mySvg.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
-    return grad;
-};
-
-
-mySvg.linGrad = function (settings) {
-    var grad = mySvg.create('linearGradient', {
-        id: settings.id,
-        x1: settings.x1,
-        y1: settings.y1,
-        x2: settings.x2,
-        y2: settings.y2
-    });
-    mySvg.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
-    mySvg.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
-    return grad;
-};
-
-
-mySvg.rgb2str = function (rgb) {
-    return "rgb(" + rgb[0].toString() + ", " + rgb[1].toString() + ", " + rgb[2].toString() + ")";
-};
-
-
-
-mySvg.createText = function (settings) {
-    var text, i, line = [], span = [], textArray;
-    text = mySvg.create("text", {
-        "text-anchor": settings.align || "middle",
-        "font-family": "arial",
-        "font-size": settings.fontSize || 20,
-        y: settings.yTop,
-        x: settings.x,
-        fill: settings.color || "white",
-        parent: settings.parent
-    });
-
-    textArray = (typeof settings.text === 'string') ? [settings.text] : settings.text;
-    for (i = 0; i < textArray.length; i += 1) {
-        line[i] = mySvg.document.createTextNode(textArray[i]);
-        span[i] = mySvg.document.createElementNS(mySvg.ns, "tspan");
-        span[i].appendChild(line[i]);
-        mySvg.setAttrs(span[i], {
-            dy: i ? "1em" : "0em",
-            x: settings.x
+    linGrad(settings) {
+        const grad = this.create('linearGradient', {
+            id: settings.id,
+            x1: settings.x1,
+            y1: settings.y1,
+            x2: settings.x2,
+            y2: settings.y2
         });
-        text.appendChild(span[i]);
-    }
-
-    return {text: text, spans: span, lines: line};
-};
-
-
-//TEMP!!!
-mySvg.setAttrs = mySvg.change;
+        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c1, offset: 0});
+        this.create('stop', {parent: grad, style: 'stop-color:' + settings.c2, offset: 1});
+        return grad;
+    };
 
 
-mySvg.getRoot = function () {
-    return mySvg.root;
-};
+    rgb2str(rgb) {
+        return "rgb(" + rgb[0].toString() + ", " + rgb[1].toString() + ", " + rgb[2].toString() + ")";
+    };
 
+
+
+    createText(settings) {
+        let line = [];
+        let span = [];
+        const text = this.create("text", {
+            "text-anchor": settings.align || "middle",
+            "font-family": "arial",
+            "font-size": settings.fontSize || 20,
+            y: settings.yTop,
+            x: settings.x,
+            fill: settings.color || "white",
+            parent: settings.parent
+        });
+
+        const textArray = (typeof settings.text === 'string') ? [settings.text] : settings.text;
+
+        for (let i = 0; i < textArray.length; i += 1) {
+            line[i] = this.document.createTextNode(textArray[i]);
+            span[i] = this.document.createElementNS(this.namespace, "tspan");
+            span[i].appendChild(line[i]);
+            this.setAttrs(span[i], {
+                dy: i ? "1em" : "0em",
+                x: settings.x
+            });
+            text.appendChild(span[i]);
+        }
+
+        return {text: text, spans: span, lines: line};
+    };
+
+    setRoot(root) {
+        this.root = root;
+        this.document = this.root.ownerDocument; //FIXME what's this???
+    };
+
+    getRoot() {
+        return this.root;
+    };
+
+}
+
+//FIXME hack
+let svg = new Svg();
