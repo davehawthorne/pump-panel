@@ -84,10 +84,10 @@ class Svg {
             switch (typeof list[i]) {
             case 'string':
             case 'number':
-                str += l + ' ';
+                str += `${l} `;
                 break;
             case 'object':
-                str += l[0] + ',' + l[1] + ' ';
+                str += `${l[0]},${l[1]} `;
                 break;
             default:
                 throw new Error('bad list: ' + list);
@@ -107,8 +107,8 @@ class Svg {
             r: r
         });
 
-        this.create('stop', {parent: grad, style: 'stop-color:' + c1, offset: 0});
-        this.create('stop', {parent: grad, style: 'stop-color:' + c2, offset: 1});
+        this.create('stop', {parent: grad, style: `stop-color:${c1}`, offset: 0});
+        this.create('stop', {parent: grad, style: `stop-color:${c2}`, offset: 1});
         return grad;
     };
 
@@ -121,14 +121,14 @@ class Svg {
             x2: x2,
             y2: y2
         });
-        this.create('stop', {parent: grad, style: 'stop-color:' + c1, offset: 0});
-        this.create('stop', {parent: grad, style: 'stop-color:' + c2, offset: 1});
+        this.create('stop', {parent: grad, style: `stop-color:${c1}`, offset: 0});
+        this.create('stop', {parent: grad, style: `stop-color:${c2}`, offset: 1});
         return grad;
     };
 
 
     rgb2str(rgb) {
-        return "rgb(" + rgb[0].toString() + ", " + rgb[1].toString() + ", " + rgb[2].toString() + ")";
+        return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
     };
 
 

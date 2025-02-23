@@ -43,10 +43,10 @@ widgets.gauges.lampFill = function (rgb, id) {
         }));
         const glow = svg.create('filter', {id: 'glow' + id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
         const matrixStr =
-            "0 0 0 " + (rgb[0] / 255).toString() + " 0 " +
-            "0 0 0 " + (rgb[1] / 255).toString() + " 0 " +
-            "0 0 0 " + (rgb[2] / 255).toString() + " 0 " +
-            "0 0 0 1 0";
+            `0 0 0 ${rgb[0] / 255} 0 ` +
+            `0 0 0 ${rgb[1] / 255} 0 ` +
+            `0 0 0 ${rgb[2] / 255} 0 ` +
+            `0 0 0 1 0`;
         svg.create('feColorMatrix', {parent: glow, type: "matrix", values: matrixStr});
         svg.create('feGaussianBlur', {parent: glow, result: "coloredBlur", stdDeviation: 5});
         widgets.gauges.fills[id] = {globe: globe, glow: glow};
@@ -76,18 +76,17 @@ widgets.gauges.lamp = class {
     #glow;
     #timer;
     #interval;
-    #flashState;
 
 
-    constructor({cx, cy, rBevel, rGlobe, colour, interval}) {
+    constructor({cx, cy, rBevel, rGlobe, colour, interval, parent}) {
 
         this.#interval = interval;
-        this.#id = 'R' + colour[0] + 'G' + colour[1] + 'B' + colour[2];
-        widgets.gauges.lampFill(rgb, this.#id);
+        this.#id = `R${colour[0]}G${colour[1]}B${colour[2]}`;
+        widgets.gauges.lampFill(colour, this.#id);
 
         this.#lampLit = false;
         this.#convexBevel = svg.create("circle", {
-            parent: settings.parent,
+            parent: parent,
             cx: cx,
             cy: cy,
             r: rBevel,
@@ -106,14 +105,14 @@ widgets.gauges.lamp = class {
             cy: cy,
             r: rGlobe,
             stroke: "none",
-            fill: "url(#globe" + this.#id + ")"
+            fill: `url(#globe${this.#id})`
         });
         this.#glow = svg.create("circle", {
             cx: cx,
             cy: cy,
             r: rBevel,
             stroke: "none",
-            filter: "url(#glow" + this.#id + ")",
+            filter: `url(#glow${this.#id})`,
             visibility: 'hidden'
         });
     };
@@ -161,7 +160,6 @@ widgets.gauges.lamp = class {
 
     flash() {
         this.#clearTimer();
-        this.#flashState = true;
         this.#setLampState(true);
         this.#timer = setInterval(
             () => this.#flashFunc(),
@@ -195,6 +193,11 @@ widgets.gauges.levelIndicator = class {
 
         for (let i = 0; i < 5; i += 1) {
             const y = yTop + (4 - i) * lampDist;
+            this.#level[i] = svg.createText({
+                x: cx + lampDist * 1.1,
+                yTop: y,
+                text: levelText[i]
+            });
             this.#lamp[i] = new widgets.gauges.lamp({
                 cx: cx,
                 cy: y,
@@ -204,18 +207,13 @@ widgets.gauges.levelIndicator = class {
                 colour: i ? [255, 127, 0] : [255, 0, 0],
                 interval: 500
             });
-            this.#level[i] = svg.createText({
-                x: cx + lampDist,
-                yTop: y,
-                text: levelText[i]
-            });
             this.#lamp[0].set(true);
         }
     };
 
     set(level) {
         if (level < 0.0 || level > 1.0) {
-            throw {name: 'badParam', message: 'bad level fill:' + level.toString()};
+            throw {name: 'badParam', message: `bad level fill: ${level}`};
         }
 
         let lampsOn;
