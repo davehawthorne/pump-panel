@@ -8,7 +8,6 @@
         <title>Lamp Test</title>
 
         <script src="utils.js"></script>
-        <script src="spinner.js"></script>
         <script src="svg.js"></script>
         <script src="lamps.js"></script>
         <script src="widgets_controls.js"></script>
@@ -77,19 +76,20 @@
                         title: "WATER"
                     });
 
-                    widgets.general.numSpinner({
-                        x: 600,
-                        y: 400,
+                    widgets.controls.outletValve({
+                        yTop: 200,
+                        yBot: 400,
+                        knobWidth: 40,
                         width: 100,
-                        height: 30,
-                        digits: 2,
-                        min: 0.0,
-                        max: 1.0,
-                        step: 0.03,
+                        height: 300,
                         callback: function (a) {
-                            lev.set(a);
-                        }
+                            lev.set(1.0 - a);
+                        },
+                        cx: 800,
+                        sideways: 20
                     });
+
+                    lev.set(1.0);
 
                 };
 
@@ -100,6 +100,6 @@
     <body onload="loadSvg()">
         <h1>Lamp Test</h1>
         <p><a href="./index.html">test index</a></p>
-        <svg id="svg1" width="1000" height="600"/>
+        <svg id="svg1" width="1000" height="600"></svg>
     </body>
 </html>
