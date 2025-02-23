@@ -192,11 +192,7 @@ utils.timerInterface = function (parent, x, y, h, heart)
         play = svg.polygon(control, [[h * 0.1, h * 0.1], [h * 0.9, h * 0.5], [h * 0.1, h * 0.9]], {fill: 'green', stroke: 'black'}),
         pause = svg.group(control, {fill: 'none', stroke: 'none'}),
         pad2 = function (val) {
-            val = val.toString();
-            while (val.length < 2) {
-                val = '0' + val;
-            }
-            return val;
+            return val.toString().padStart(2, '0');
         },
         state = {
             mins: 0,
@@ -300,4 +296,3 @@ utils.handleException = function (ex) {
         msg = "EX " + typeof ex + ' "' + ex.message + '" ' + ex.fileName + ':' + ex.lineNumber + '\n' + ex.stack;
     alert(msg);
 };
-

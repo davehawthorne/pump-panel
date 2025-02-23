@@ -464,12 +464,9 @@ widgets.gauges.flow = function (settings) {
     return {
         set: function (flow) {
             if (flow < 0 || flow > 9999) {
-                throw {name: 'badParam', message: 'bad flow:' + flow.toString()};
+                throw {name: 'badParam', message: `bad flow:${flow}`};
             }
-            var text = Math.round(flow).toString();
-            while (text.length < 4) {
-                text = "0" + text;
-            }
+            const text = Math.round(flow).toString().padStart(4, '0');
             priv.textNode.nodeValue = text;
         }
     };
