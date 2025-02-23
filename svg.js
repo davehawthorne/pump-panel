@@ -142,6 +142,20 @@ class Svg {
         return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
     };
 
+    changeableText(initial, attributes) {
+        const textNode = this.#document.createTextNode(initial);
+        const text = this.create("text", attributes);
+
+        text.appendChild(textNode);
+
+        return {
+            text : text,
+            change : function (value) {
+                textNode.nodeValue = value;
+            }
+        };
+    };
+
 
     createText({align="middle", fontSize=20, yTop, x, color="white", parent, text }) {
         let line = [];

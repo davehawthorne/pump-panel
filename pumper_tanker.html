@@ -26,19 +26,19 @@
             /*global buildPumpPanel svg*/
             "use strict";
 
-            function muck() {
-                var table = $('#attack');
-                table.append($('<tr>').append($('<th>').append($('<p>').html("hello"))));
-                table.append($('<tr>').append($('<th>').append($('<p>').html("bye"))));
-                table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="38">38<\/option><option value="64">64<\/option><\/select>'))));
-                table.append($('<tr>').append($('<th>').append($('<input type="text" value="1"/>'))));
-                table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475<\/option><option value="350">350<\/option><option value="125">125<\/option><\/select>'))));
-            }
+            // function muck() {
+            //     var table = $('#attack');
+            //     table.append($('<tr>').append($('<th>').append($('<p>').html("hello"))));
+            //     table.append($('<tr>').append($('<th>').append($('<p>').html("bye"))));
+            //     table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="38">38<\/option><option value="64">64<\/option><\/select>'))));
+            //     table.append($('<tr>').append($('<th>').append($('<input type="text" value="1"/>'))));
+            //     table.append($('<tr>').append($('<th>').append($('<select name="hose"><option value="475">475<\/option><option value="350">350<\/option><option value="125">125<\/option><\/select>'))));
+            // }
 
             function loadSvg() {
                 svg.setRoot(document.getElementById("svg1"));
                 buildPumpPanel();
-                muck();
+                // muck();
             }
 
         </script>
@@ -58,4 +58,3 @@
         </table>
     </body>
 </html>
-

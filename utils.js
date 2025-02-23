@@ -98,26 +98,6 @@ utils.buildRounder = function (decimals) {
 };
 
 
-
-/// Augments the jquery svg library
-var changeableText = function (svg, parent, initial, attributes) {
-    var
-        textNode = svg.document.createTextNode(initial),
-        text = svg.document.createElementNS("http://www.w3.org/2000/svg", "text");
-
-    //TEMP!!!svg.change(attributes)
-    text.appendChild(textNode);
-    parent.appendChild(text);
-
-    return {
-        text : text,
-        change : function (value) {
-            textNode.nodeValue = value;
-        }
-    };
-};
-
-
 utils.timerHeart = function (ticksPerSec) {
     var
         interval = 1000 / ticksPerSec,
@@ -243,7 +223,7 @@ utils.timerInterface = function (parent, x, y, h, heart)
 
     for (field in state) {
         if (typeof state[field] !== 'function') {
-            fieldDisplays[field] = changeableText(svg, g, pad2(state[field]));
+            fieldDisplays[field] = svg.changeableText(pad2(state[field]),{parent:g});
         }
     }
     svg.change(fieldDisplays.mins.text, {x: h * 1.1, y: h * 0.8, fill: 'white', 'font-size': h * 0.8});

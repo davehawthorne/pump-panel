@@ -439,12 +439,13 @@ widgets.gauges.flow = function (settings) {
             r: settings.width / 2,
             fill: "#880000"
         }),
-        textElem: svg.createText({
-            text: "----",
+        textElem: svg.changeableText("----", {
             x: settings.cx,
-            yTop: settings.cy,
-            fontSize: settings.width / 4,
-            color: "#FF0000"
+            y: settings.cy,
+            "text-anchor": 'middle',
+            "font-family": "arial",
+            'font-size': settings.width / 4,
+            fill: "#FF0000"
         })
     };
     return {
@@ -453,7 +454,7 @@ widgets.gauges.flow = function (settings) {
                 throw {name: 'badParam', message: `bad flow:${flow}`};
             }
             const text = Math.round(flow).toString().padStart(4, '0');
-            priv.textElem.lines[0].nodeValue = text;
+            priv.textElem.change(text);
         }
     };
 };

@@ -38,32 +38,24 @@ var showLog = function () {
 
 
 
-var svgDocument;
-
-var svgns = "http://www.w3.org/2000/svg";
-var xlinkNS = "http://www.w3.org/1999/xlink";
 
 var active = {};  //TEMP!!!
 
 var debugDisp = function (x, y, text) {
-    var
+    const
         priv = {
-            line: svg.document.createTextNode(text),
             baseText: text
-        },
-        textWid = svg.document.createElementNS(svgns, "text");
-    utils.setAttrs(textWid, {
+        }
+    const textWid = svg.changeableText(text, {
         "text-anchor": "middle",
         x: x,
         y: y,
         "font-family": "arial",
         fill: "red"
     });
-    textWid.appendChild(priv.line);
-    svg.document.documentElement.appendChild(textWid);
     return {
         set: function (text) {
-            priv.line.nodeValue = priv.baseText + ":" + text;
+            textWid.set(priv.baseText + ":" + text);
         }
     };
 };
@@ -300,10 +292,13 @@ var model = (function () {
         setHydrantLineRise: function (h) {
         },
         setOutValve: function (index, value) {
+            if (index === 4) {
+                return;  //FIXME
+            }
             var totalRes;
             outValve[index].set(value);
-            totalRes = outValve[index].resistance() + 1 / 650;    //TEMP!!! add a length of 38
-            al[index].setHoseResistance(totalRes);
+            totalRes = outValve[index].resistance(); // + 1 / 650;    //TEMP!!! add a length of 38
+            al[index].setValveResistance(totalRes);
         },
 
         setInValve: function (index, value) {
@@ -413,7 +408,6 @@ var buildPumpPanel = function () {
     try {
         var
             de = svg.getRoot(),
-            //TEMP!!! jqSvg = null,
             panel = svg.create("rect", {x: 0, y: 0, width: 1500, height: 800, fill: "#202020"}),
             hpCircle = svg.create("circle", {cx: 350, cy: 180, r: 90, fill: "blue"}),
             combCircle = svg.create("circle", {cx: 600, cy: 180, r: 90, fill: "green"}),
@@ -433,10 +427,10 @@ var buildPumpPanel = function () {
             decreaseRevs: widgets.controls.pushButton({parent: de, cx: 700, cy: 450, width: 40, text: ["DEC."], callback: model.revDown}),
             increaseRevs: widgets.controls.pushButton({parent: de, cx: 775, cy: 450, width: 40, text: ["INC."], callback: model.revUp}),
             tankIso: widgets.controls.toggleSwitch({parent: de, cx: 1150, cy: 180, width: 20, text: ["WATER TANK", "ISO VALVE"], callback: model.tankIso, initial: true}),
-            waterLevel: widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"}),
-            cavitation: widgets.gauges.lamp({cx: 600, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [255, 0, 0]}),
-            hoseCollapse: widgets.gauges.lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]}),
-            modelFail: widgets.gauges.lamp({cx: 40, cy: 40, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
+            waterLevel: new widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"}),
+            cavitation: new widgets.gauges.lamp({cx: 600, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [255, 0, 0]}),
+            hoseCollapse: new widgets.gauges.lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]}),
+            modelFail: new widgets.gauges.lamp({cx: 40, cy: 40, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
         };
 
         active.waterLevel.set(0.5);
@@ -557,9 +551,3 @@ var buildPumpPanel = function () {
         utils.handleException(ex);
     }
 };
-
-
-
-
-
-
