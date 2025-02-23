@@ -154,7 +154,7 @@ widgets.controls.outletValve = function (settings) {
         if (evt.preventDefault) {
             evt.preventDefault();
         }
-        priv.grabHandle(evt.clientY);
+        priv.grabHandle(svg.eventCoord(evt).y);
     }, false);
 
     priv.back.addEventListener("mouseup", function (evt) {
@@ -164,7 +164,7 @@ widgets.controls.outletValve = function (settings) {
 
     priv.back.addEventListener("mouseout", function (evt) {
         if (priv.grabbed) {
-            priv.moveHandle(evt.clientY);
+            priv.moveHandle(svg.eventCoord(evt).y);
             priv.grabbed = false;
             priv.deactivate();
         }
@@ -172,7 +172,7 @@ widgets.controls.outletValve = function (settings) {
 
     priv.back.addEventListener("mousemove", function (evt) {
         if (priv.grabbed) {
-            priv.moveHandle(evt.clientY);
+            priv.moveHandle(svg.eventCoord(evt).y);
         }
     }, false);
 
@@ -317,5 +317,3 @@ widgets.controls.pushButton = function (settings) {
         }
     };
 };
-
-

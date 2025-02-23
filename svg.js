@@ -1,18 +1,23 @@
 // "use strict";
 
 class Svg {
-    namespace = "http://www.w3.org/2000/svg"
+
+    static #namespace = "http://www.w3.org/2000/svg"
+
+    #root;
+    #document;
+    #clientRect;
 
     constructor() {
-        // this.root = root;
-        // console.log(this.root);  //FIXME
-        // this.document = this.root.ownerDocument; //FIXME what's this???
+        // this.#root = root;
+        // console.log(this.#root);  //FIXME
+        // this.#document = this.#root.ownerDocument; //FIXME what's this???
         this.setAttrs = this.change;  //FIXME remove
     }
 
     create(type, attributes) {
-        const element = this.document.createElementNS(this.namespace, type),
-        parent = attributes.parent || this.root;
+        const element = this.#document.createElementNS(Svg.#namespace, type),
+        parent = attributes.parent || this.#root;
 
         for (let attrName in attributes) {
             if (attrName === 'parent') {        //FIXME
@@ -25,6 +30,12 @@ class Svg {
         return element;
     }
 
+    useElement(href, attributes) {
+        let item = this.create("use", attributes);
+        item.setAttributeNS("http://www.w3.org/1999/xlink", "href", href);
+        return item
+    }
+
     change(item, attributes) {
         for (let name in attributes) {
             item.setAttribute(name, attributes[name]);
@@ -32,7 +43,7 @@ class Svg {
     }
 
     makeThing(type, names, args) {
-        const element = this.document.createElementNS(this.namespace, type);
+        const element = this.#document.createElementNS(Svg.#namespace, type);
         const parent = args[0];
         const attributes = args[names.length + 1];
 
@@ -66,7 +77,7 @@ class Svg {
 
 
     polygon(parent, path, attributes) {
-        const element = this.document.createElementNS(this.namespace, 'polygon');
+        const element = this.#document.createElementNS(Svg.#namespace, 'polygon');
         const pathStr = this.path(path);
 
         element.setAttribute('points', pathStr);
@@ -132,8 +143,7 @@ class Svg {
     };
 
 
-
-    createText({align="middle", fontSize=20, yTop, x, color="white", parent, text, }) {
+    createText({align="middle", fontSize=20, yTop, x, color="white", parent, text }) {
         let line = [];
         let span = [];
         const textObj = this.create("text", {
@@ -149,8 +159,8 @@ class Svg {
         const textArray = (typeof text === 'string') ? [text] : text;
 
         for (let i = 0; i < textArray.length; i += 1) {
-            line[i] = this.document.createTextNode(textArray[i]);
-            span[i] = this.document.createElementNS(this.namespace, "tspan");
+            line[i] = this.#document.createTextNode(textArray[i]);
+            span[i] = this.#document.createElementNS(Svg.#namespace, "tspan");
             span[i].appendChild(line[i]);
             this.setAttrs(span[i], {
                 dy: i ? "1em" : "0em",
@@ -163,13 +173,25 @@ class Svg {
     };
 
     setRoot(root) {
-        this.root = root;
-        this.document = this.root.ownerDocument; //FIXME what's this???
+        this.#root = root;
+        this.#document = this.#root.ownerDocument; //FIXME what's this???
+
+        this.#clientRect = this.#root.getBoundingClientRect();
+
     };
 
     getRoot() {
-        return this.root;
+        return this.#root;
+    }
+
+    eventCoord(event) {
+        return {
+            x: event.clientX - this.#clientRect.x,
+            y: event.clientY - this.#clientRect.y
+        };
     };
+
+
 
 }
 

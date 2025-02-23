@@ -20,32 +20,27 @@
                 flow,
 
                 all = function (val) {
-                    var i;
-                    for (i in gauges) {
-                        if (typeof gauges[i] !== 'function') {
-                            gauges[i].showPressure(val * 1000);
-                        }
+                    let pressure = (val * 1700.0) - 100.0;
+                    for (let i in gauges) {
+                            gauges[i].showPressure(pressure);
                     }
-                    flow.set(val * 1000);
+                    flow.set(Math.max(0,pressure));
                 },
 
                 loadSvg = function () {
 
-
-                    var
-                        de = null;
                     svg.setRoot(document.getElementById("svg1"));
 
                     svg.create("rect", {x: 0, y: 10, width: 800, height: 600, fill: "#202090"});
 
                     gauges = {
-                        outGauge: widgets.gauges.outlet({parent: de, cx: 200, cy: 200, radius: 75}),
-                        combGauge: widgets.gauges.compound({parent: de, cx: 400, cy: 200, radius: 75}),
-                        hpGauge: widgets.gauges.highPressure({parent: de, cx: 200, cy: 400, radius: 75}),
-                        revGauge: widgets.gauges.engineRevs({parent: de, cx: 400, cy: 400, radius: 75})
+                        outGauge: widgets.gauges.outlet({cx: 200, cy: 200, radius: 75}),
+                        combGauge: widgets.gauges.compound({cx: 400, cy: 200, radius: 75}),
+                        hpGauge: widgets.gauges.highPressure({cx: 200, cy: 400, radius: 75}),
+                        revGauge: widgets.gauges.engineRevs({cx: 400, cy: 400, radius: 60})
                     };
 
-                    flow = widgets.gauges.flow({parent: de, cx: 300, cy: 300, width: 70});
+                    flow = widgets.gauges.flow({cx: 300, cy: 300, width: 70});
 
                     widgets.controls.outletValve({
                         yTop: 200,
@@ -67,6 +62,6 @@
     <body onload="loadSvg()">
         <h1>Gauge Test</h1>
         <p><a href="./index.html">test index</a></p>
-        <svg id="svg1" width="800" height="600"/>
+        <svg id="svg1" width="800" height="600" ></svg>
     </body>
 </html>

@@ -8,11 +8,6 @@ if (!widgets.gauges) {
     widgets.gauges = {};
 }
 
-var
-    //TEMP!!! lose these
-    svgns = "http://www.w3.org/2000/svg",
-    xlinkNS = "http://www.w3.org/1999/xlink";
-
 /// used to generate the graduations on a gauge dial, these are built as just
 /// three paths, each of a different thickness.
 widgets.dialGraduations = function (cx, cy, r) {
@@ -31,7 +26,7 @@ widgets.dialGraduations = function (cx, cy, r) {
                 x2 = trim(cx + r2 * x),
                 y2 = trim(cy + r2 * y);
 
-            return 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2 + ' ';
+            return `M${x1} ${y1} L${x2} ${y2} `;
         };
 
     return {
@@ -90,84 +85,87 @@ widgets.placeText = function (settings, textArray) {
 /// Creates the bevel, face and needle for a gauge.
 /// Private method
 ///
-widgets.gauges.baseGauge = function (backName, settings) {
-    var
-        back,
-        needle,
-        r = settings.radius,
-        cx = settings.cx,
-        cy = settings.cy,
-        priv;
+class BaseGauge {
 
-    priv = {};
+    #convexBevel;
+    #concaveBevel;
+    #face;
+    #needle;
+    #cx;
+    #cy;
+    static #fills = {};
+    static #needleSymbol;
 
-    if (!widgets.gauges.common) {
-        widgets.gauges.common = [
-            svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'white', c2: 'grey', id: "convexGaugeBevelFill"}),
-            svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'grey', c2: 'white', id: "concaveGaugeBevelFill"})
-        ];
 
-        needle = svg.create("symbol",
-            {
-                id: "needle",
-                width: 20,
-                height: 20,
-                style: "fill:black",
-                viewBox: "-10 -10 20 20"
-            }
-        );
+    constructor(backName, {radius, cx, cy}) {
 
-        svg.create("circle", {parent: needle, r: 1});
-        svg.create("polyline", {parent: needle, points: "-0.3,0 0,8.5 0.3,0 1,-3 -1,-3 -0.3,0", style: "fill:black"});
-        svg.create("circle", {parent: needle, r: 0.2, style: "fill:white"});
-
-    }
-
-    priv.convexBevel = svg.create("circle", {
-        cx: cx,
-        cy: cy,
-        r: settings.radius,
-        stroke: "black",
-        fill: "url(#convexGaugeBevelFill)"
-    });
-
-    priv.concaveBevel = svg.create("circle", {
-        //parent: priv.convexBevel,
-        cx: cx,
-        cy: cy,
-        r: r * 0.95,
-        stroke: "none",
-        fill: "url(#concaveGaugeBevelFill)"
-    });
-
-    priv.face = svg.create("circle", {
-        cx: cx,
-        cy: cy,
-        r: r * 0.9,
-        stroke: "black",
-        fill: "white"
-    });
-
-    needle = svg.document.createElementNS(svgns, "use");
-    needle.setAttributeNS(xlinkNS, "href", "#needle");
-    utils.setAttrs(needle, {x: cx - r, y: cy - r, width: 2 * r, height: 2 * r});
-    if (!settings.parent) {
-        settings.parent = svg.root;
-    }
-    settings.parent.appendChild(needle);
-
-    return {
-        setNeedle: function (angle) {
-            needle.setAttribute("transform", "rotate(" + angle + "," + cx + "," + cy + ")");
+        if (!("convexGaugeBevelFill" in BaseGauge.#fills)) {
+            BaseGauge.#fills.convexGaugeBevelFill = svg.linGrad({
+                x1: 0, y1: 0, x2: 1, y2: 1, c1: 'white', c2: 'grey', id: "convexGaugeBevelFill"
+            });
+            BaseGauge.#fills.concaveGaugeBevelFill = svg.linGrad({
+                x1: 0, y1: 0, x2: 1, y2: 1, c1: 'grey', c2: 'white', id: "concaveGaugeBevelFill"
+            });
         }
-    };
+
+        if (!BaseGauge.#needleSymbol) {
+            const needle = svg.create("symbol",
+                {
+                    id: "needle",
+                    width: 20,
+                    height: 20,
+                    style: "fill:black",
+                    viewBox: "-10 -10 20 20"
+                }
+            );
+
+            svg.create("circle", {parent: needle, r: 1});
+            svg.create("polyline", {parent: needle, points: "-0.3,0 0,8.5 0.3,0 1,-3 -1,-3 -0.3,0", style: "fill:black"});
+            svg.create("circle", {parent: needle, r: 0.2, style: "fill:white"});
+            BaseGauge.#needleSymbol = needle;
+        }
+
+        this.#convexBevel = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: radius,
+            stroke: "black",
+            fill: "url(#convexGaugeBevelFill)"
+        });
+
+        this.#concaveBevel = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: radius * 0.95,
+            stroke: "none",
+            fill: "url(#concaveGaugeBevelFill)"
+        });
+
+        this.#face = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: radius * 0.9,
+            stroke: "black",
+            fill: "white"
+        });
+
+        this.#needle = svg.useElement("#needle", {x: cx - radius, y: cy - radius, width: 2 * radius, height: 2 * radius})
+        this.#cx = cx;
+        this.#cy = cy;
+    }
+
+    setNeedle(angle) {
+        this.#needle.setAttribute("transform", `rotate(${angle},${this.#cx},${this.#cy})`);
+    }
 };
+
+
 
 
 /// Creates a high pressure outlet gauge: 0 to 4000kPa
 widgets.gauges.highPressure = function (settings) {
     var
-        base = widgets.gauges.baseGauge("#hpGauge", settings),
+        base =  new BaseGauge("#hpGauge", settings),
         a, i,
         r = settings.radius,
         grad = widgets.dialGraduations(settings.cx, settings.cy, r);
@@ -222,7 +220,7 @@ widgets.gauges.highPressure = function (settings) {
 /// Creates a normal outlet gauge: 0 to 2500kPa
 widgets.gauges.outlet = function (settings) {
     var
-        base = widgets.gauges.baseGauge("#outletGauge", settings),
+        base = new BaseGauge("#outletGauge", settings),
         a, i,
         r2,
         r = settings.radius,
@@ -279,7 +277,7 @@ widgets.gauges.outlet = function (settings) {
 
 widgets.gauges.engineRevs = function (settings) {
     var
-        base = widgets.gauges.baseGauge("#revsGauge", settings),
+        base = new BaseGauge("#revsGauge", settings),
         a, i,
         r = settings.radius,
         grad = widgets.dialGraduations(settings.cx, settings.cy, r);
@@ -335,7 +333,7 @@ widgets.gauges.engineRevs = function (settings) {
 /// Creates an inlet gauge -100 to 1600kPa
 widgets.gauges.compound = function (settings) {
     var
-        base = widgets.gauges.baseGauge("#compoundGauge", settings),
+        base = new BaseGauge("#compoundGauge", settings),
         a, i,
         r2,
         r = settings.radius,
@@ -434,44 +432,28 @@ widgets.gauges.compound = function (settings) {
 // A digital flow gauge: 0 to 9999lpm
 widgets.gauges.flow = function (settings) {
     var priv = {
-        textNode: svg.document.createTextNode("----"),
-        textElem: svg.document.createElementNS(svgns, "text"),
-        mount: svg.document.createElementNS(svgns, "circle"),
-        cx: settings.cx,
-        cy: settings.cy,
-        width: settings.width
+        // textNode: svg.document.createTextNode(),
+        mount: svg.create("circle", {
+            cx: settings.cx,
+            cy: settings.cy,
+            r: settings.width / 2,
+            fill: "#880000"
+        }),
+        textElem: svg.createText({
+            text: "----",
+            x: settings.cx,
+            yTop: settings.cy,
+            fontSize: settings.width / 4,
+            color: "#FF0000"
+        })
     };
-    utils.setAttrs(priv.mount, {
-        cx: priv.cx,
-        cy: priv.cy,
-        r: settings.width / 2,
-        fill: "#880000"
-    });
-    utils.setAttrs(priv.textElem, {
-        "text-anchor": "middle",
-        x: priv.cx,
-        y: priv.cy,
-        "font-family": "arial",
-        "font-size": settings.width / 4,
-        fill: "#FF0000"
-    });
-    priv.textElem.appendChild(priv.textNode);
-    if (!settings.parent) {
-        settings.parent = svg.root;
-    }
-    settings.parent.appendChild(priv.mount);
-    settings.parent.appendChild(priv.textElem);
     return {
         set: function (flow) {
             if (flow < 0 || flow > 9999) {
                 throw {name: 'badParam', message: `bad flow:${flow}`};
             }
             const text = Math.round(flow).toString().padStart(4, '0');
-            priv.textNode.nodeValue = text;
+            priv.textElem.lines[0].nodeValue = text;
         }
     };
 };
-
-
-
-
