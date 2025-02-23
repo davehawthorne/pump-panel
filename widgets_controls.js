@@ -75,7 +75,7 @@ widgets.controls.outletValve = function (settings) {
         x2: priv.cx,
         y1: priv.yTop,
         y2: priv.yBot,
-        style: "stroke-linecap: round; stroke: #101010; stroke-width: " + priv.slotWidth.toString()
+        style: "stroke-linecap: round; stroke: #303030; stroke-width: " + priv.slotWidth.toString()
     });
     priv.slit = svg.create("line", {
         parent: priv.group,
@@ -87,7 +87,7 @@ widgets.controls.outletValve = function (settings) {
     });
     priv.stork = svg.create("line", {
         parent: priv.group,
-        style: "stroke-linecap: round; stroke: #303030; stroke-width: " + priv.storkWidth.toString()
+        style: "stroke-linecap: round; stroke: #606060; stroke-width: " + priv.storkWidth.toString()
     });
 
     priv.knob = svg.create("circle", {
