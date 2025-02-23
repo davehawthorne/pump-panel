@@ -1,58 +1,6 @@
 /*global svg widgets utils*/
 "use strict";
 
-var widgets;        //TEMP!!!
-
-if (!widgets) {
-    widgets = {};
-}
-if (!widgets.gauges) {
-    widgets.gauges = {};
-}
-
-
-// This method is only called by widgets.gauges.lamp()
-//
-// The glow of the lamps when turned on and the gradients of lamp bevels and
-// lamp surfaces.
-// rgb is an RGB integer array (3 values from 0 to 255)
-//
-// The light source is taken to be to the upper left of the panel.
-// On first call two linear gradients are created for the silver coloured bevel surrounding the lamps.
-// The outer one is lighter on the top left, the inner one is lighter on the bottom right.
-//
-// Each unilluminated lamp has a radial colour gradient which mimics the external light reflected off
-// its round surface.  One such gradient is generated for each lamp colour and its name is generated
-// from the RGB values.
-// Similarly a gaussian blur is created for each lamp colour.  This is used to signify the lamp is on.
-widgets.gauges.lampFill = function (rgb, id) {
-    const lampGradCommon = {cx: 0.4, cy: 0.4, fx: 0.25, fy: 0.25, r: 0.25, c1: 'white'};
-    const dullColour = [Math.round(rgb[0] / 2), Math.round(rgb[1] / 2), Math.round(rgb[2] / 2)];
-
-    if (!widgets.gauges.fills) {
-        svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'white', c2: 'grey', id: "convexLampBevelFill"});
-        svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'grey', c2: 'white', id: "concaveLampBevelFill"});
-        widgets.gauges.fills = {};
-
-    }
-
-    if (!widgets.gauges.fills[id]) {
-        const globe = svg.radGrad(utils.shallowMerge(lampGradCommon, {
-            c2: svg.rgb2str(dullColour),
-            id: 'globe' + id
-        }));
-        const glow = svg.create('filter', {id: 'glow' + id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
-        const matrixStr =
-            `0 0 0 ${rgb[0] / 255} 0 ` +
-            `0 0 0 ${rgb[1] / 255} 0 ` +
-            `0 0 0 ${rgb[2] / 255} 0 ` +
-            `0 0 0 1 0`;
-        svg.create('feColorMatrix', {parent: glow, type: "matrix", values: matrixStr});
-        svg.create('feGaussianBlur', {parent: glow, result: "coloredBlur", stdDeviation: 5});
-        widgets.gauges.fills[id] = {globe: globe, glow: glow};
-    }
-};
-
 
 // The logic for a single lamp.  Lamp has a bezel.
 //
@@ -65,8 +13,8 @@ widgets.gauges.lampFill = function (rgb, id) {
 //   (extinguished lamp has these values halved.)
 //
 // The glow of the lamp, the shine of the bevel and the shine of the unlit lamp
-// is achieved with the lampFill method.
-widgets.gauges.lamp = class {
+// is achieved with the buildLampFill method.
+class Lamp {
 
     #lampLit;
     #id;
@@ -77,12 +25,13 @@ widgets.gauges.lamp = class {
     #timer;
     #interval;
 
+    static #fills = {};
 
     constructor({cx, cy, rBevel, rGlobe, colour, interval, parent}) {
 
         this.#interval = interval;
         this.#id = `R${colour[0]}G${colour[1]}B${colour[2]}`;
-        widgets.gauges.lampFill(colour, this.#id);
+        Lamp.#buildLampFill(colour, this.#id);
 
         this.#lampLit = false;
         this.#convexBevel = svg.create("circle", {
@@ -116,6 +65,47 @@ widgets.gauges.lamp = class {
             visibility: 'hidden'
         });
     };
+
+    // This method is only called by widgets.gauges.lamp()
+    //
+    // The glow of the lamps when turned on and the gradients of lamp bevels and
+    // lamp surfaces.
+    // rgb is an RGB integer array (3 values from 0 to 255)
+    //
+    // The light source is taken to be to the upper left of the panel.
+    // On first call two linear gradients are created for the silver coloured bevel surrounding the lamps.
+    // The outer one is lighter on the top left, the inner one is lighter on the bottom right.
+    //
+    // Each unilluminated lamp has a radial colour gradient which mimics the external light reflected off
+    // its round surface.  One such gradient is generated for each lamp colour and its name is generated
+    // from the RGB values.
+    // Similarly a gaussian blur is created for each lamp colour.  This is used to signify the lamp is on.
+    static #buildLampFill(rgb, id) {
+        const lampGradCommon = {cx: 0.4, cy: 0.4, fx: 0.25, fy: 0.25, r: 0.25, c1: 'white'};
+        const dullColour = [Math.round(rgb[0] / 2), Math.round(rgb[1] / 2), Math.round(rgb[2] / 2)];
+
+        if (!("convexLampBevelFill" in Lamp.#fills)) {
+            Lamp.#fills.convexLampBevelFill = svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'white', c2: 'grey', id: "convexLampBevelFill"});
+            Lamp.#fills.concaveLampBevelFill = svg.linGrad({x1: 0, y1: 0, x2: 1, y2: 1, c1: 'grey', c2: 'white', id: "concaveLampBevelFill"});
+        }
+
+        if (!(id in Lamp.#fills)) {
+            const globe = svg.radGrad(utils.shallowMerge(lampGradCommon, {
+                c2: svg.rgb2str(dullColour),
+                id: 'globe' + id
+            }));
+            const glow = svg.create('filter', {id: 'glow' + id, x: "-20%", y: "-20%", width: "140%", height: "140%"});
+            const matrixStr =
+                `0 0 0 ${rgb[0] / 255} 0 ` +
+                `0 0 0 ${rgb[1] / 255} 0 ` +
+                `0 0 0 ${rgb[2] / 255} 0 ` +
+                `0 0 0 1 0`;
+            svg.create('feColorMatrix', {parent: glow, type: "matrix", values: matrixStr});
+            svg.create('feGaussianBlur', {parent: glow, result: "coloredBlur", stdDeviation: 5});
+            Lamp.#fills[id] = {globe: globe, glow: glow};
+        }
+    };
+
 
     #clearTimer() {
         if (this.#timer) {
@@ -175,7 +165,7 @@ widgets.gauges.lamp = class {
 // 25% - 50%   1 amber on
 // <25%        red on
 // 0%          red flashing
-widgets.gauges.levelIndicator = class {
+class LevelIndicator {
 
     #lamp = [];
     #level = [];
@@ -207,7 +197,7 @@ widgets.gauges.levelIndicator = class {
                 colour: i ? [255, 127, 0] : [255, 0, 0],
                 interval: 500
             });
-            this.#lamp[0].set(true);
+            this.#lamp[0].flash();
         }
     };
 
@@ -245,3 +235,16 @@ widgets.gauges.levelIndicator = class {
         this.#currentLampsOn = lampsOn;
     };
 };
+
+
+var widgets;        //TEMP!!!
+
+if (!widgets) {
+    widgets = {};
+}
+if (!widgets.gauges) {
+    widgets.gauges = {};
+}
+
+widgets.gauges.lamp = Lamp;
+widgets.gauges.levelIndicator = LevelIndicator;
