@@ -228,7 +228,7 @@ function sideways(xLoc) {
 
 
 function addLamp(cx, cy, colour) {
-    return new widgets.gauges.lamp({
+    return new Lamp({
         cx: cx,
         cy: cy,
         rBevel: dim.rBevel,
@@ -256,13 +256,13 @@ function attachWidgets(de) {
             cx: x.iv,
             sideways: sideways(x.iv)
         }),
-        combGauge: widgets.gauges.compound({
+        combGauge: new CompoundGauge({
             parent: de,
             cx: x.ig,
             cy: y.gc,
             radius: dim.gauge
         }),
-        revGauge: widgets.gauges.engineRevs({
+        revGauge: new EngineRevsGauge({
             parent: de,
             cx: x.p,
             cy: y.rpm,
@@ -278,7 +278,7 @@ function attachWidgets(de) {
             cx: x.pt,
             sideways: sideways(x.pt)
         }),
-        outGauge: widgets.gauges.outlet({
+        outGauge: new OutletGauge({
             parent: de,
             cx: x.og,
             cy: y.gc,
@@ -294,16 +294,16 @@ function attachWidgets(de) {
             cx: x.ov,
             sideways: sideways(x.ov)
         }),
-        branchGauge: widgets.gauges.outlet({
+        branchGauge: new OutletGauge({
             parent: de,
             cx: x.bg,
             cy: y.gc,
             radius: dim.rpm
         }),
-        outFlow: widgets.gauges.flow({
+        outFlow: new FlowGauge({
             cx: x.p,
             cy: y.gc,
-            width: dim.rpm * 1.5
+            radius: dim.rpm / 2
         }),
 
         hydrantMenu: doHydrantMenu(0, 0),

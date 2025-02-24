@@ -66,8 +66,6 @@ class Lamp {
         });
     };
 
-    // This method is only called by widgets.gauges.lamp()
-    //
     // The glow of the lamps when turned on and the gradients of lamp bevels and
     // lamp surfaces.
     // rgb is an RGB integer array (3 values from 0 to 255)
@@ -188,7 +186,7 @@ class LevelIndicator {
                 yTop: y,
                 text: levelText[i]
             });
-            this.#lamp[i] = new widgets.gauges.lamp({
+            this.#lamp[i] = new Lamp({
                 cx: cx,
                 cy: y,
                 rBevel: 20,
@@ -237,14 +235,4 @@ class LevelIndicator {
 };
 
 
-var widgets;        //TEMP!!!
-
-if (!widgets) {
-    widgets = {};
-}
-if (!widgets.gauges) {
-    widgets.gauges = {};
-}
-
-widgets.gauges.lamp = Lamp;
-widgets.gauges.levelIndicator = LevelIndicator;
+LevelIndicator = LevelIndicator;

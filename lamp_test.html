@@ -58,7 +58,7 @@
                     widgets.controls.toggleSwitch({cx: 450, cy: 40, width: 20, text: ["pulse"], callback: pulse});
                     for (j = 0; j < size; j += 1) {
                         for (i = 0; i < size; i += 1) {
-                            bob[i + j * size] = new widgets.gauges.lamp({
+                            bob[i + j * size] = new Lamp({
                                 cx: 40 + 60 * i,
                                 cy: 120 + 60 * j,
                                 rBevel: 20 + i,
@@ -69,7 +69,7 @@
                         }
                     }
 
-                    lev = new widgets.gauges.levelIndicator({
+                    lev = new LevelIndicator({
                         cx: 600,
                         yTop: 50,
                         lampDist: 50,

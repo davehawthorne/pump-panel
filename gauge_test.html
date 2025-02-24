@@ -34,13 +34,13 @@
                     svg.create("rect", {x: 0, y: 10, width: 800, height: 600, fill: "#202090"});
 
                     gauges = {
-                        outGauge: widgets.gauges.outlet({cx: 200, cy: 200, radius: 75}),
-                        combGauge: widgets.gauges.compound({cx: 400, cy: 200, radius: 75}),
-                        hpGauge: widgets.gauges.highPressure({cx: 200, cy: 400, radius: 75}),
-                        revGauge: widgets.gauges.engineRevs({cx: 400, cy: 400, radius: 60})
+                        outGauge: new OutletGauge({cx: 200, cy: 200, radius: 75}),
+                        combGauge: new CompoundGauge({cx: 400, cy: 200, radius: 75}),
+                        hpGauge: new HighPressureGauge({cx: 200, cy: 400, radius: 75}),
+                        revGauge: new EngineRevsGauge({cx: 400, cy: 400, radius: 60})
                     };
 
-                    flow = widgets.gauges.flow({cx: 300, cy: 300, width: 70});
+                    flow = new FlowGauge({cx: 300, cy: 300, radius: 50});
 
                     widgets.controls.outletValve({
                         yTop: 200,

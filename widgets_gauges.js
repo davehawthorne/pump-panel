@@ -4,87 +4,78 @@
 
 var widgets = window.widgets || {};
 
-if (!widgets.gauges) {
-    widgets.gauges = {};
-}
+// if (!widgets.gauges) {
+//     widgets.gauges = {};
+// }
 
 /// used to generate the graduations on a gauge dial, these are built as just
 /// three paths, each of a different thickness.
-widgets.dialGraduations = function (cx, cy, r) {
-    var
-        thinLine = '',
-        midLine = '',
-        thickLine = '',
-        lineCoords = function (angle, r1, r2) {
-            var
-                trim = utils.buildRounder(3),
-                theta = (angle + 90) * Math.PI / 180,
-                x = Math.cos(theta),
-                y = Math.sin(theta),
-                x1 = trim(cx + r1 * x),
-                y1 = trim(cy + r1 * y),
-                x2 = trim(cx + r2 * x),
-                y2 = trim(cy + r2 * y);
 
-            return `M${x1} ${y1} L${x2} ${y2} `;
-        };
+class DialGraduationBuilder {
 
-    return {
-        minor: function (angle) {
-            thinLine += lineCoords(angle, r * 0.85, r * 0.75);
-        },
+    #thinLine = '';
+    #midLine = '';
+    #thickLine = '';
+    #cx;
+    #cy;
+    #radius;
 
-        mid: function (angle) {
-            thinLine += lineCoords(angle, r * 0.85, r * 0.70);
-        },
-
-        major: function (angle) {
-            thinLine += lineCoords(angle, r * 0.85, r * 0.75);
-            midLine += lineCoords(angle, r * 0.75, r * 0.65);
-        },
-
-        zero: function (angle) {
-            thinLine += lineCoords(angle, r * 0.85, r * 0.75);
-            thickLine += lineCoords(angle, r * 0.75, r * 0.70);
-            midLine += lineCoords(angle, r * 0.70, r * 0.65);
-        },
-
-        draw: function (svg, color) {
-            return [
-                svg.create("path", {stroke: color, "stroke-width": 1, d: thinLine}),
-                svg.create("path", {stroke: color, "stroke-width": 2, d: midLine}),
-                svg.create("path", {stroke: color, "stroke-width": 4, d: thickLine})
-            ];
-        }
-    };
-};
-
-
-widgets.placeText = function (settings, textArray) {
-    var
-        i,
-        t,
-        r = settings.radius;
-
-    for (i = 0; i < textArray.length; i += 1) {
-        t = textArray[i];
-        svg.createText(
-            {
-                color: 'black',
-                fontSize: 12,
-                text: t[2],
-                yTop: settings.cy + t[1] * r,
-                x: settings.cx + t[0] * r,
-                align: t[3]
-            }
-        );
+    constructor(cx, cy, radius) {
+        this.#cx = cx;
+        this.#cy = cy;
+        this.#radius = radius;
     }
+
+    #lineCoords(angle, r1, r2) {
+        const trim = utils.buildRounder(3);
+        const theta = (angle + 90) * Math.PI / 180;
+        const x = Math.cos(theta);
+        const y = Math.sin(theta);
+        const x1 = trim(this.#cx + this.#radius * r1 * x);
+        const y1 = trim(this.#cy + this.#radius * r1 * y);
+        const x2 = trim(this.#cx + this.#radius * r2 * x);
+        const y2 = trim(this.#cy + this.#radius * r2 * y);
+
+        return `M${x1} ${y1} L${x2} ${y2} `;
+    }
+
+    minor(angle) {
+        this.#thinLine += this.#lineCoords(angle, 0.85, 0.75);
+    }
+
+    mid(angle) {
+        this.#thinLine += this.#lineCoords(angle, 0.85, 0.70);
+    }
+
+    major(angle) {
+        this.#thinLine += this.#lineCoords(angle, 0.85, 0.75);
+        this.#midLine += this.#lineCoords(angle, 0.75, 0.65);
+    }
+
+    zero(angle) {
+        this.#thinLine += this.#lineCoords(angle, 0.85, 0.75);
+        this.#thickLine += this.#lineCoords(angle, 0.75, 0.70);
+        this.#midLine += this.#lineCoords(angle, 0.70, 0.65);
+    }
+
+    draw(color) {
+        console.log(`draw ${color} ${this.#thinLine.length}`)
+        return [
+            svg.create("path", {stroke: color, "stroke-width": 1, d: this.#thinLine}),
+            svg.create("path", {stroke: color, "stroke-width": 2, d: this.#midLine}),
+            svg.create("path", {stroke: color, "stroke-width": 4, d: this.#thickLine})
+        ];
+    }
+
 };
 
 
-/// Creates the bevel, face and needle for a gauge.
-/// Private method
-///
+
+
+
+// Creates the bevel, face and needle for a gauge.
+// Private method
+//
 class BaseGauge {
 
     #convexBevel;
@@ -93,11 +84,14 @@ class BaseGauge {
     #needle;
     #cx;
     #cy;
+    #radius;
     static #fills = {};
     static #needleSymbol;
 
 
-    constructor(backName, {radius, cx, cy}) {
+    constructor(radius, cx, cy) {
+
+        // console.log(`BaseGauge ${cx} ${cy} ${radius}`)
 
         if (!("convexGaugeBevelFill" in BaseGauge.#fills)) {
             BaseGauge.#fills.convexGaugeBevelFill = svg.linGrad({
@@ -152,236 +146,232 @@ class BaseGauge {
         this.#needle = svg.useElement("#needle", {x: cx - radius, y: cy - radius, width: 2 * radius, height: 2 * radius})
         this.#cx = cx;
         this.#cy = cy;
+        this.#radius = radius;
     }
 
     setNeedle(angle) {
         this.#needle.setAttribute("transform", `rotate(${angle},${this.#cx},${this.#cy})`);
     }
+
+    placeText(textArray) {
+
+        for (let i = 0; i < textArray.length; i += 1) {
+            const t = textArray[i];
+            svg.createText(
+                {
+                    color: 'black',
+                    fontSize: 12,
+                    text: t[2],
+                    yTop: this.#cy + t[1] * this.#radius,
+                    x: this.#cx + t[0] * this.#radius,
+                    align: t[3]
+                }
+            );
+        }
+    }
 };
 
 
-
+class HighPressureGauge extends BaseGauge {
 
 /// Creates a high pressure outlet gauge: 0 to 4000kPa
-widgets.gauges.highPressure = function (settings) {
-    var
-        base =  new BaseGauge("#hpGauge", settings),
-        a, i,
-        r = settings.radius,
-        grad = widgets.dialGraduations(settings.cx, settings.cy, r);
+    constructor({radius, cx, cy}) {
+        // console.log(`HighPressureGauge ${cx} ${cy} ${radius}`)
 
-    grad.zero(45);
-    for (a = 45 + 6.75, i = 1; a <= 315; a += 6.75)
-    {
-        switch (i) {
-        case 5:
-            grad.mid(a);
-            break;
-        case 10:
-            grad.major(a);
-            i = 0;
-            break;
-        default:
-            grad.minor(a);
+        super(radius, cx, cy);
+        const grad = new DialGraduationBuilder(cx, cy, radius);
+
+        grad.zero(45);
+        for (let a = 45 + 6.75, i = 1; a <= 315; a += 6.75)
+        {
+            switch (i) {
+            case 5:
+                grad.mid(a);
+                break;
+            case 10:
+                grad.major(a);
+                i = 0;
+                break;
+            default:
+                grad.minor(a);
+            }
+            i += 1;
+
         }
-        i += 1;
+        grad.draw("black");
 
-    }
-    grad.draw(svg, "black");
-
-    widgets.placeText(
-        settings,
-        [
+        this.placeText([
             [-0.4, 0.5, '0', 'start'],
             [-0.65, -0.1, '1000', 'start'],
             [0.0, -0.55, '2000', 'middle'],
             [0.65, -0.1, '3000', 'end'],
             [0.4, 0.5, '4000', 'end']
-        ]
-    );
+        ]);
+    };
 
-    return {
-        showPressure: function (p) {
-            var a;
-            if (p < 0 || isNaN(p)) {
-                a = -135; // bottom out
-            } else if (p > 4000) {
-                a = 135;  // 100kPa in 20deg
-            } else {
-                a = -135 + p / 4000 * 270;
-            }
-            base.setNeedle(a + 180);
-
+    showPressure(p) {
+        let a;
+        if (p < 0 || isNaN(p)) {
+            a = -135; // bottom out
+        } else if (p > 4000) {
+            a = 135;  // 100kPa in 20deg
+        } else {
+            a = -135 + p / 4000 * 270;
         }
+        this.setNeedle(a + 180);
+
     };
 };
 
 
 /// Creates a normal outlet gauge: 0 to 2500kPa
-widgets.gauges.outlet = function (settings) {
-    var
-        base = new BaseGauge("#outletGauge", settings),
-        a, i,
-        r2,
-        r = settings.radius,
-        grad = widgets.dialGraduations(settings.cx, settings.cy, r);
+class OutletGauge extends BaseGauge {
+    constructor({radius, cx, cy}) {
+        super(radius, cx, cy);
+        const grad = new DialGraduationBuilder(cx, cy, radius);
 
+        grad.zero(45);
+        for (let a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
+        {
 
-    grad.zero(45);
-    for (a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
-    {
-
-        if (i === 10) {
-            grad.major(a);
-            i = 0;
-        } else if (i % 2 === 1) {  // odd value
-            grad.minor(a);
-        } else {
-            grad.mid(a);
-        }
-
-        i += 1;
-
-    }
-    grad.draw(svg, 'black');
-
-    widgets.placeText(
-        settings,
-        [
-            [-0.45, 0.45, '0', 'start'],
-            [-0.60, -0.1, '500', 'start'],
-            [-0.4, -0.45, '1000', 'start'],
-            [0.4, -0.45, '1500', 'end'],
-            [0.6, -0.1, '2000', 'end'],
-            [0.45, 0.45, '2500', 'end'],
-            [0.0, 0.6, 'kPa', 'middle']
-        ]
-    );
-
-    return {
-        showPressure: function (p) {
-            var a;
-            if (p < 0 || isNaN(p)) {
-                a = -135; // bottom out
-            } else if (p > 2500) {
-                a = 135;  // 100kPa in 20deg
+            if (i === 10) {
+                grad.major(a);
+                i = 0;
+            } else if (i % 2 === 1) {  // odd value
+                grad.minor(a);
             } else {
-                a = -135 + p / 2500 * 270;
+                grad.mid(a);
             }
-            base.setNeedle(a + 180);
+
+            i += 1;
 
         }
+        grad.draw('black');
+
+        this.placeText(
+            [
+                [-0.45, 0.45, '0', 'start'],
+                [-0.60, -0.1, '500', 'start'],
+                [-0.4, -0.45, '1000', 'start'],
+                [0.4, -0.45, '1500', 'end'],
+                [0.6, -0.1, '2000', 'end'],
+                [0.45, 0.45, '2500', 'end'],
+                [0.0, 0.6, 'kPa', 'middle']
+            ]
+        );
+    };
+
+    showPressure(p) {
+        let a;
+        if (p < 0 || isNaN(p)) {
+            a = -135; // bottom out
+        } else if (p > 2500) {
+            a = 135;  // 100kPa in 20deg
+        } else {
+            a = -135 + p / 2500 * 270;
+        }
+        this.setNeedle(a + 180);
+
     };
 };
 
 
-widgets.gauges.engineRevs = function (settings) {
-    var
-        base = new BaseGauge("#revsGauge", settings),
-        a, i,
-        r = settings.radius,
-        grad = widgets.dialGraduations(settings.cx, settings.cy, r);
+class EngineRevsGauge extends BaseGauge {
+    constructor({radius, cx, cy}) {
+        super(radius, cx, cy);
+        const grad = new DialGraduationBuilder(cx, cy, radius);
 
-    grad.zero(45);
-    for (a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
-    {
+        grad.zero(45);
+        for (let a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
+        {
 
-        if (i === 10) {
-            grad.major(a);
-            i = 0;
-        } else if (i === 5) {
-            grad.mid(a);
-        } else {
-            grad.minor(a);
-        }
-
-        i += 1;
-
-    }
-    grad.draw(svg, 'black');
-
-    widgets.placeText(
-        settings,
-        [
-            [-0.5, 0.4, '0', 'start'],
-            [-0.65, -0.1, '1000', 'start'],
-            [-0.45, -0.4, '2000', 'start'],
-            [0.45, -0.4, '3000', 'end'],
-            [0.65, -0.1, '4000', 'end'],
-            [0.5, 0.4, '5000', 'end'],
-            [0.0, 0.6, 'RPM', 'middle']
-        ]
-    );
-
-    return {
-        showPressure: function (rpm) {
-            var a;
-            if (rpm < 0 || isNaN(rpm)) {
-                a = -135; // bottom out
-            } else if (rpm > 5000) {
-                a = 135;  // 100rpm in 20deg
+            if (i === 10) {
+                grad.major(a);
+                i = 0;
+            } else if (i === 5) {
+                grad.mid(a);
             } else {
-                a = -135 + rpm / 5000 * 270;
+                grad.minor(a);
             }
-            base.setNeedle(a + 180);
+
+            i += 1;
 
         }
+        grad.draw('black');
+
+        this.placeText(
+            [
+                [-0.5, 0.4, '0', 'start'],
+                [-0.65, -0.1, '1000', 'start'],
+                [-0.45, -0.4, '2000', 'start'],
+                [0.45, -0.4, '3000', 'end'],
+                [0.65, -0.1, '4000', 'end'],
+                [0.5, 0.4, '5000', 'end'],
+                [0.0, 0.6, 'RPM', 'middle']
+            ]
+        );
+    }
+
+    showPressure(rpm) {
+        let a;
+        if (rpm < 0 || isNaN(rpm)) {
+            a = -135; // bottom out
+        } else if (rpm > 5000) {
+            a = 135;  // 100rpm in 20deg
+        } else {
+            a = -135 + rpm / 5000 * 270;
+        }
+        this.setNeedle(a + 180);
+
     };
 };
 
 
 /// Creates an inlet gauge -100 to 1600kPa
-widgets.gauges.compound = function (settings) {
-    var
-        base = new BaseGauge("#compoundGauge", settings),
-        a, i,
-        r2,
-        r = settings.radius,
-        redGrad = widgets.dialGraduations(settings.cx, settings.cy, settings.radius),
-        blackGrad = widgets.dialGraduations(settings.cx, settings.cy, settings.radius);
+class CompoundGauge extends BaseGauge {
+    constructor({radius, cx, cy}) {
+        super(radius, cx, cy);
+        const redGrad = new DialGraduationBuilder(cx, cy, radius);
+        const blackGrad = new DialGraduationBuilder(cx, cy, radius);
 
-    for (a = 180 - 7, i = 1; a >= 40; a -= 7) {
-        switch (i) {
-        case 0:
-            redGrad.major(a);
-            i += 1;
-            break;
-        case 1:
-            redGrad.minor(a);
-            i += 1;
-            break;
-        case 2:
-            redGrad.mid(a);
-            i += 1;
-            break;
-        default:
-            redGrad.minor(a);
-            i = 0;
+        for (let a = 180 - 7, i = 1; a >= 40; a -= 7) {
+            switch (i) {
+            case 0:
+                redGrad.major(a);
+                i += 1;
+                break;
+            case 1:
+                redGrad.minor(a);
+                i += 1;
+                break;
+            case 2:
+                redGrad.mid(a);
+                i += 1;
+                break;
+            default:
+                redGrad.minor(a);
+                i = 0;
+            }
         }
-    }
 
-    blackGrad.zero(180);
+        blackGrad.zero(180);
 
-    blackGrad.major(200);
-    blackGrad.minor(206);
-    blackGrad.minor(212);
-    for (a = 218, i = 0; a <= 315; a += 8) {
-        if (i === 0) {
-            blackGrad.major(a);
-        } else {
-            blackGrad.minor(a);
+        blackGrad.major(200);
+        blackGrad.minor(206);
+        blackGrad.minor(212);
+        for (let a = 218, i = 0; a <= 315; a += 8) {
+            if (i === 0) {
+                blackGrad.major(a);
+            } else {
+                blackGrad.minor(a);
+            }
+            i = (i + 1) % 4;  // modulo 4 increment
         }
-        i = (i + 1) % 4;  // modulo 4 increment
-    }
 
-    redGrad.draw(svg, 'red');
-    blackGrad.draw(svg, 'black');
+        redGrad.draw('red');
+        blackGrad.draw('black');
 
-
-
-    widgets.placeText(
-        settings,
-        [
+        this.placeText([
             [-0.3, -0.5, "-20", 'start'],
             [-0.6, -0.25, "-40", 'start'],
             [-0.7, 0, "-60", 'start'],
@@ -394,67 +384,59 @@ widgets.gauges.compound = function (settings) {
             [0.6, 0.15, "1200", 'end'],
             [0.6, 0.4, "1600", 'end'],
             [0.0, 0.6, 'kPa', 'middle']
-        ]
-    );
+        ]);
+    }
 
-    return {
-        showPressure: function (p) {
-            var a;
-            if (p < -100 || isNaN(p)) {
-                a = -140;
-            } else if (p < 0) {
-                a = p * 1.4; // 100kPa in 140deg
-            } else if (p < 100) {
-                a = p * 0.2;  // 100kPa in 20deg
-            } else if (p < 400) {
-                a = 20 + (p - 100) * 0.06; // 6deg per 100kPa
-            } else if (p < 1600) {
-                a = 38 + (p - 400) * 0.08; // 8deg per 100kPa
-            } else {
-                a = 38 + 1200 * 0.08;
-            }
-            base.setNeedle(a + 180);
-
-        },
-
-        smash: function () {
-        },
-
-        remove: function () {
-        },
-
-        setPos: function (parent, x, y) {
+    showPressure(p) {
+        let a;
+        if (p < -100 || isNaN(p)) {
+            a = -140;
+        } else if (p < 0) {
+            a = p * 1.4; // 100kPa in 140deg
+        } else if (p < 100) {
+            a = p * 0.2;  // 100kPa in 20deg
+        } else if (p < 400) {
+            a = 20 + (p - 100) * 0.06; // 6deg per 100kPa
+        } else if (p < 1600) {
+            a = 38 + (p - 400) * 0.08; // 8deg per 100kPa
+        } else {
+            a = 38 + 1200 * 0.08;
         }
+        this.setNeedle(a + 180);
+
     };
+
 };
 
 
 // A digital flow gauge: 0 to 9999lpm
-widgets.gauges.flow = function (settings) {
-    var priv = {
+class FlowGauge {
+    #textElem;
+    #mount;
+
+    constructor({radius, cx, cy}) {
         // textNode: svg.document.createTextNode(),
-        mount: svg.create("circle", {
-            cx: settings.cx,
-            cy: settings.cy,
-            r: settings.width / 2,
+        this.#mount = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: radius,
             fill: "#880000"
         }),
-        textElem: svg.changeableText("----", {
-            x: settings.cx,
-            y: settings.cy,
+        this.#textElem = svg.changeableText("----", {
+            x: cx,
+            y: cy,
             "text-anchor": 'middle',
             "font-family": "arial",
-            'font-size': settings.width / 4,
+            'font-size': radius / 2,
             fill: "#FF0000"
         })
-    };
-    return {
-        set: function (flow) {
-            if (flow < 0 || flow > 9999) {
-                throw {name: 'badParam', message: `bad flow:${flow}`};
-            }
-            const text = Math.round(flow).toString().padStart(4, '0');
-            priv.textElem.change(text);
+    }
+
+    set(flow) {
+        if (flow < 0 || flow > 9999) {
+            throw {name: 'badParam', message: `bad flow:${flow}`};
         }
+        const text = Math.round(flow).toString().padStart(4, '0');
+        this.#textElem.change(text);
     };
 };

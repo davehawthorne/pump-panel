@@ -418,19 +418,19 @@ var buildPumpPanel = function () {
             heart = utils.timerHeart(10);  // ten times per second
 
         active = {
-            outGauge: widgets.gauges.outlet({parent: de, cx: 350, cy: 180, radius: 75}),
-            combGauge: widgets.gauges.compound({parent: de, cx: 600, cy: 180, radius: 75}),
-            hpGauge: widgets.gauges.highPressure({parent: de, cx: 850, cy: 180, radius: 75}),
-            revGauge: widgets.gauges.engineRevs({parent: de, cx: 1025, cy: 180, radius: 50}),
+            outGauge: new OutletGauge({parent: de, cx: 350, cy: 180, radius: 75}),
+            combGauge: new CompoundGauge({parent: de, cx: 600, cy: 180, radius: 75}),
+            hpGauge: new HighPressureGauge({parent: de, cx: 850, cy: 180, radius: 75}),
+            revGauge: new EngineRevsGauge({parent: de, cx: 1025, cy: 180, radius: 50}),
             startBut: widgets.controls.pushButton({parent: de, cx: 550, cy: 450, width: 40, text: ["START"], callback: model.startBut}),
             onOff: widgets.controls.toggleSwitch({parent: de, cx: 625, cy: 450, width: 20, text: ["OFF-ON"], callback: model.onOff}),
             decreaseRevs: widgets.controls.pushButton({parent: de, cx: 700, cy: 450, width: 40, text: ["DEC."], callback: model.revDown}),
             increaseRevs: widgets.controls.pushButton({parent: de, cx: 775, cy: 450, width: 40, text: ["INC."], callback: model.revUp}),
             tankIso: widgets.controls.toggleSwitch({parent: de, cx: 1150, cy: 180, width: 20, text: ["WATER TANK", "ISO VALVE"], callback: model.tankIso, initial: true}),
-            waterLevel: new widgets.gauges.levelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"}),
-            cavitation: new widgets.gauges.lamp({cx: 600, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [255, 0, 0]}),
-            hoseCollapse: new widgets.gauges.lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]}),
-            modelFail: new widgets.gauges.lamp({cx: 40, cy: 40, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
+            waterLevel: new LevelIndicator({cx: 1300, yTop: 50, lampDist: 50, title: "WATER"}),
+            cavitation: new Lamp({cx: 600, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [255, 0, 0]}),
+            hoseCollapse: new Lamp({cx: 675, cy: 325, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]}),
+            modelFail: new Lamp({cx: 40, cy: 40, rBevel: 29, rGlobe: 20, interval: 500, colour: [0, 0, 255]})
         };
 
         active.waterLevel.set(0.5);
@@ -449,7 +449,7 @@ var buildPumpPanel = function () {
                 cx: x,
                 sideways: sideways
             });
-            active.outFlow[i] = widgets.gauges.flow({parent: de, cx: x, cy: 600, width: 70});
+            active.outFlow[i] = new FlowGauge({parent: de, cx: x, cy: 600, width: 70});
         }
 
         active.inValue = [];
