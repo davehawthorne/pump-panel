@@ -246,7 +246,7 @@ function attachWidgets(de) {
         redline: addLamp(x.p + dim.rpm, y.rpm - dim.rpm, colour.redLamp),
         underPressure: addLamp(x.bg + dim.rpm, y.gc - dim.rpm, colour.redLamp),
 
-        inValve: widgets.controls.outletValve({
+        inValve: new OutletValve({
             yTop: y.vt,
             yBot: y.vb,
             knobWidth: dim.knobWidth,
@@ -268,7 +268,7 @@ function attachWidgets(de) {
             cy: y.rpm,
             radius: dim.rpm
         }),
-        throttle: widgets.controls.outletValve({
+        throttle: new OutletValve({
             yTop: y.ptt,
             yBot: y.ptb,
             knobWidth: dim.knobWidth,
@@ -284,7 +284,7 @@ function attachWidgets(de) {
             cy: y.gc,
             radius: dim.gauge
         }),
-        outValve: widgets.controls.outletValve({
+        outValve: new OutletValve({
             yTop: y.vt,
             yBot: y.vb,
             knobWidth: dim.knobWidth,

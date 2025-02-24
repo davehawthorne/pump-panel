@@ -16,8 +16,8 @@
 
             "use strict";
 
+            const size = 7;
             var
-                size = 7,
                 bob = [],
                 aaa = 0,
                 lev,
@@ -48,16 +48,16 @@
                 },
 
                 loadSvg = function () {
-                    var i, j, step = 255 / size;
+                    const step = 255 / size;
 
                     svg.setRoot(document.getElementById("svg1"));
 
                     svg.create("rect", {x: 0, y: 10, width: 1000, height: 600, fill: "#202090"});
-                    widgets.controls.toggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
-                    widgets.controls.toggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
-                    widgets.controls.toggleSwitch({cx: 450, cy: 40, width: 20, text: ["pulse"], callback: pulse});
-                    for (j = 0; j < size; j += 1) {
-                        for (i = 0; i < size; i += 1) {
+                    new ToggleSwitch({cx: 250, cy: 40, width: 20, text: ["pat"], callback: sid});
+                    new ToggleSwitch({cx: 350, cy: 40, width: 20, text: ["all"], callback: all});
+                    new ToggleSwitch({cx: 450, cy: 40, width: 20, text: ["pulse"], callback: pulse});
+                    for (let j = 0; j < size; j += 1) {
+                        for (let i = 0; i < size; i += 1) {
                             bob[i + j * size] = new Lamp({
                                 cx: 40 + 60 * i,
                                 cy: 120 + 60 * j,
@@ -76,7 +76,7 @@
                         title: "WATER"
                     });
 
-                    widgets.controls.outletValve({
+                    new OutletValve({
                         yTop: 200,
                         yBot: 400,
                         knobWidth: 40,

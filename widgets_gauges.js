@@ -2,11 +2,6 @@
 
 "use strict";
 
-var widgets = window.widgets || {};
-
-// if (!widgets.gauges) {
-//     widgets.gauges = {};
-// }
 
 /// used to generate the graduations on a gauge dial, these are built as just
 /// three paths, each of a different thickness.
@@ -59,7 +54,7 @@ class DialGraduationBuilder {
     }
 
     draw(color) {
-        console.log(`draw ${color} ${this.#thinLine.length}`)
+        // console.log(`draw ${color} ${this.#thinLine.length}`)
         return [
             svg.create("path", {stroke: color, "stroke-width": 1, d: this.#thinLine}),
             svg.create("path", {stroke: color, "stroke-width": 2, d: this.#midLine}),

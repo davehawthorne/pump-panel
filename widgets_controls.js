@@ -1,319 +1,335 @@
 /*global svg utils*/
 "use strict";
 
-var widgets = window.widgets || {};
+class OutletValve {
 
-if (!widgets.controls) {
-    widgets.controls = {};
-}
+    #callback;
+    #cursorToCentre;
+    #cx;
+    #cy;
+    #grabbed = false;
+    #knob;
+    #knobBot;
+    #knobR;
+    #knobTop;
+    #pos = 0.0;
+    #sideways;
+    #stork;
+    #travel;
+    #width;
 
-var temp;
+    static #fills = {};
 
-widgets.controls.outletValve = function (settings) {
-    var priv, drawHandle, cy, travel;
+    constructor({cx, yTop, yBot, width, sideways, knobWidth, callback, height}) {
 
-    priv = utils.copyAttribs(settings, [
-        'cx', 'yTop', 'yBot', 'width', 'sideways', 'knobWidth', 'callback', 'height'
-    ]);
+        this.#cx = cx;
+        // this.#yTop = yTop;
+        // this.#yBot = yBot;
+        this.#width = width;
+        this.#sideways = sideways;
+        this.#callback = callback;
+        // this.#height = height;
+        this.#cy = (yTop + yBot) / 2;
+        this.#travel = (this.#cy - yTop) * 1.5;
 
-    cy = (settings.yTop + settings.yBot) / 2;
-    travel = (cy - settings.yTop) * 1.5;
-    utils.append(priv, {
-        grabbed: false,
-        pos: 0.0,
-        cy: cy,
-        travel: travel,
-        knobTop: cy - travel,
-        knobBot: cy + travel,
-        paintWidth: settings.knobWidth * 1.1,
-        storkWidth: settings.knobWidth * 0.3,
-        slotWidth: settings.knobWidth * 0.7,
-        halfWidth: settings.width * 0.5,
-        halfHeight: settings.height * 0.5,
-        knobR: settings.knobWidth * 0.5
-    });
+        // utils.append(priv, {
+        //     grabbed: false,
+        //     pos: 0.0,
+        //     cy: cy,
+        //     travel: travel,
+        //     knobTop: cy - travel,
+        //     knobBot: cy + travel,
+        //     paintWidth: settings.knobWidth * 1.1,
+        //     halfWidth: settings.width * 0.5,
+        // const halfHeight: settings.height * 0.5,
+        // });
 
-    temp = priv;
+        const storkWidth = knobWidth * 0.3;
+        const slotWidth = knobWidth * 0.7;
 
-    if (!widgets.controls.fills) {
-        widgets.controls.fills = {};
-    }
-    if (!widgets.controls.fills.knob) {
-        widgets.controls.fills.knob = svg.radGrad({
-            cx: 0.4,
-            cy: 0.4,
-            fx: 0.35,
-            fy: 0.35,
-            r: 0.25,
-            c1: 'white',
-            c2: 'black',
-            id: 'knobFill'
-        });
-    }
+        this.#knobR = knobWidth * 0.5;
+        this.#knobTop = this.#cy - this.#travel;
+        this.#knobBot = this.#cy + this.#travel;
 
-    drawHandle = function (cy) {
-        var dy, dx, theta, cx, yBase;
-        dy = priv.pos - 0.5;
-        theta = Math.asin(dy);
-        dx = Math.cos(theta);
-        if (settings.sideways) {
-            cx = priv.cx + 2.0 * priv.sideways * (dx - 0.5);
-        } else {
-            cx = priv.cx;
+        if (!("knobFill" in OutletValve.#fills)) {
+            OutletValve.#fills.convexGaugeBevelFill = svg.radGrad({
+                cx: 0.4, cy: 0.4,
+                fx: 0.35, fy: 0.35,
+                r: 0.25,
+                c1: 'white', c2: 'black',
+                id: 'knobFill'
+            });
         }
-        yBase = priv.travel * Math.sin(theta) + priv.cy;
-        svg.setAttrs(priv.knob, {cy: cy, cx: cx});
-        svg.setAttrs(priv.stork, {y1: cy, x1: cx, x2: priv.cx, y2: yBase });
 
-    };
+        const group = svg.create("g", {});
 
-    priv.group = svg.create("g", {});
+        const slot = svg.create("line", {
+            parent: group,
+            x1: cx,
+            x2: cx,
+            y1: yTop,
+            y2: yBot,
+            style: `stroke-linecap: round; stroke: #303030; stroke-width: ${slotWidth}`
+        });
+        const slit = svg.create("line", {
+            parent: group,
+            x1: cx,
+            x2: cx,
+            y1: yTop,
+            y2: yBot,
+            style: "stroke: black; stroke-width: 1px;"
+        });
+        this.#stork = svg.create("line", {
+            parent: group,
+            style: `stroke-linecap: round; stroke: #606060; stroke-width: ${storkWidth}`
+        });
 
-    priv.slot = svg.create("line", {
-        parent: priv.group,
-        x1: priv.cx,
-        x2: priv.cx,
-        y1: priv.yTop,
-        y2: priv.yBot,
-        style: "stroke-linecap: round; stroke: #303030; stroke-width: " + priv.slotWidth.toString()
-    });
-    priv.slit = svg.create("line", {
-        parent: priv.group,
-        x1: priv.cx,
-        x2: priv.cx,
-        y1: priv.yTop,
-        y2: priv.yBot,
-        style: "stroke: black; stroke-width: 1px;"
-    });
-    priv.stork = svg.create("line", {
-        parent: priv.group,
-        style: "stroke-linecap: round; stroke: #606060; stroke-width: " + priv.storkWidth.toString()
-    });
+        this.#knob = svg.create("circle", {
+            parent: group,
+            r: this.#knobR,
+            fill: "url(#knobFill)"
+        });
 
-    priv.knob = svg.create("circle", {
-        parent: priv.group,
-        r: priv.knobR,
-        fill: "url(#knobFill)"
-    });
+        const back = svg.create("rect", {
+            parent: group,
+            x: cx - width / 2,
+            y: this.#cy - height / 2 - this.#knobR,
+            width: width,
+            height: height + 2 * this.#knobR,
+            "fill-opacity": 0
+        });
 
-    priv.back = svg.create("rect", {
-        parent: priv.group,
-        x: priv.cx - priv.halfWidth,
-        y: priv.cy - priv.halfHeight - priv.knobR,
-        width: priv.width,
-        height: priv.height + 2 * priv.knobR,
-        "fill-opacity": 0
-    });
+        back.addEventListener("mousedown", (evt) => this.mousedown(evt));
+        back.addEventListener("mouseup", (evt) => this.mouseup(evt));
+        back.addEventListener("mouseout", (evt) => this.mouseout(evt));
+        back.addEventListener("mousemove", (evt) => this.mousemove(evt));
 
-    drawHandle(priv.knobTop);
+        this.#drawHandle(this.#knobTop);
+    }
 
-    priv.grabHandle = function (clientY) {
+    mousedown (evt) {
+        if (evt.preventDefault) {
+            evt.preventDefault();
+        }
+        this.#grabHandle(svg.eventCoord(evt).y);
+    }
+
+    mouseup(evt) {
+        this.#grabbed = false;
+        this.#deactivate();
+    }
+
+    mouseout(evt) {
+        if (this.#grabbed) {
+            this.#moveHandle(svg.eventCoord(evt).y);
+            this.#grabbed = false;
+            this.#deactivate();
+        }
+    }
+
+    mousemove(evt) {
+        if (this.#grabbed) {
+            this.#moveHandle(svg.eventCoord(evt).y);
+        }
+    }
+
+    #drawHandle(cy) {
+        const dy = this.#pos - 0.5;
+        const theta = Math.asin(dy);
+        const dx = Math.cos(theta);
+        let cx;
+        if (this.#sideways) {
+            cx = this.#cx + 2.0 * this.#sideways * (dx - 0.5);
+        } else {
+            cx = this.#cx;
+        }
+        const yBase = this.#travel * Math.sin(theta) + this.#cy;
+        svg.setAttrs(this.#knob, {cy: cy, cx: cx});
+        svg.setAttrs(this.#stork, {y1: cy, x1: cx, x2: this.#cx, y2: yBase });
+
+    }
+
+    #grabHandle(clientY) {
         var
-            knobY = parseInt(priv.knob.getAttributeNS(null, "cy"), 10);
-        if (Math.abs(clientY - knobY) > priv.width) {
+            knobY = parseInt(this.#knob.getAttributeNS(null, "cy"), 10);
+        if (Math.abs(clientY - knobY) > this.#width) {
             return;
         }
-        priv.grabbed = true;
-        priv.cursorToCentre = clientY - knobY;
-        priv.activate();
-    };
+        this.#grabbed = true;
+        this.#cursorToCentre = clientY - knobY;
+        this.#activate();
+    }
 
-    priv.moveHandle = function (clientY) {
+    #moveHandle(clientY) {
         var cy;
-        cy = clientY - priv.cursorToCentre;
-        if (cy < priv.knobTop) {
-            cy = priv.knobTop;
-            priv.pos = 0.0;
-        } else if (cy > priv.knobBot) {
-            cy = priv.knobBot;
-            priv.pos = 1.0;
+        cy = clientY - this.#cursorToCentre;
+        if (cy < this.#knobTop) {
+            cy = this.#knobTop;
+            this.#pos = 0.0;
+        } else if (cy > this.#knobBot) {
+            cy = this.#knobBot;
+            this.#pos = 1.0;
         } else {
-            priv.pos = (cy - priv.knobTop) / (2 * priv.travel);
+            this.#pos = (cy - this.#knobTop) / (2 * this.#travel);
         }
-        drawHandle(cy);
-        if (priv.callback) {
-            priv.callback(priv.pos);
+        this.#drawHandle(cy);
+        if (this.#callback) {
+            this.#callback(this.#pos);
         }
-    };
+    }
 
-
-    priv.deactivate = function () {
-        svg.change(priv.knob, {
-            r: priv.knobR,
+    #deactivate() {
+        svg.change(this.#knob, {
+            r: this.#knobR,
         });
     }
 
-    priv.activate = function () {
-        svg.change(priv.knob, {
-            r: priv.knobR * 1.5
+    #activate() {
+        svg.change(this.#knob, {
+            r: this.#knobR * 1.5
         });
     }
 
+    getPosition() {
+        return this.#pos;
+    }
 
-    priv.back.addEventListener("mousedown", function (evt) {
-        if (evt.preventDefault) {
-            evt.preventDefault();
-        }
-        priv.grabHandle(svg.eventCoord(evt).y);
-    }, false);
-
-    priv.back.addEventListener("mouseup", function (evt) {
-        priv.grabbed = false;
-        priv.deactivate();
-    }, false);
-
-    priv.back.addEventListener("mouseout", function (evt) {
-        if (priv.grabbed) {
-            priv.moveHandle(svg.eventCoord(evt).y);
-            priv.grabbed = false;
-            priv.deactivate();
-        }
-    }, false);
-
-    priv.back.addEventListener("mousemove", function (evt) {
-        if (priv.grabbed) {
-            priv.moveHandle(svg.eventCoord(evt).y);
-        }
-    }, false);
-
-    return {
-        getPosition: function () {
-            return priv.pos;
-        },
-        setCallback: function (callback) {
-            priv.callback = callback;
-            callback(priv.pos);
-        }
-    };
+    setCallback(callback) {
+        this.#callback = callback;
+        callback(this.#pos);
+    }
 };
 
 
-widgets.controls.toggleSwitch = function (settings) {
-    var
-        priv = {
-            cx: settings.cx,
-            cy: settings.cy,
-            width: settings.width,
-            halfWidth: settings.width / 2,
-            callback: settings.callback,
-            on: settings.initial || false,
-            clickFunc: null,
-            setFunc: null
-        },
-        i, line, span;
+class ToggleSwitch {
 
-    priv.setFunc = function (on) {
+    #callback;
+    #cy;
+    #on;
+    #tog;
+    #width;
+
+    constructor({cx, cy, width, initial=false, callback=null, height, text=null}) {
+        this.#cy = cy;
+        this.#callback = callback;
+        this.#width = width;
+        const halfWidth = width / 2;
+        this.#on = initial;
+
+        if (text) {
+            svg.createText({
+                x: cx,
+                yTop: cy + width * 2,
+                text: text
+            });
+        }
+
+        const mount = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: halfWidth,
+            style: "fill: black;"
+        });
+
+        mount.addEventListener("click", (evt) => this.#clickFunc(evt), false);
+
+        this.#tog = svg.create("line", {
+            x1: cx,
+            x2: cx,
+            y1: cy,
+            y2: cy,
+            style: `stroke-linecap: round; stroke: black; stroke-width: ${halfWidth}`
+        });
+
+        this.#tog.addEventListener("click", (evt) => this.#clickFunc(evt), false);
+        this.#setFunc(this.#on);
+
+    }
+
+    #clickFunc(evt) {
+        this.#on = !this.#on;
+        this.#setFunc(this.#on);
+        if (this.#callback) {
+            this.#callback(this.#on);
+        }
+    }
+
+    #setFunc(on) {
         if (on) {
-            svg.setAttrs(priv.tog, {y2: priv.cy + priv.width});
+            svg.setAttrs(this.#tog, {y2: this.#cy + this.#width});
         } else {
-            svg.setAttrs(priv.tog, {y2: priv.cy - priv.width});
+            svg.setAttrs(this.#tog, {y2: this.#cy - this.#width});
         }
-    };
+    }
 
-    priv.clickFunc = function (evt) {
-        priv.on = !priv.on;
-        priv.setFunc(priv.on);
-        if (priv.callback) {
-            priv.callback(priv.on);
-        }
-    };
-
-    priv.text = svg.createText({
-        x: priv.cx,
-        yTop: priv.cy + priv.width * 2,
-        text: settings.text
-    });
-
-    priv.mount = svg.create("circle", {
-        cx: priv.cx,
-        cy: priv.cy,
-        r: priv.width / 2,
-        style: "fill: black;"
-    });
-
-    priv.mount.addEventListener("click", priv.clickFunc, false);
-
-    priv.tog = svg.create("line", {
-        x1: priv.cx,
-        x2: priv.cx,
-        y1: priv.cy,
-        y2: priv.cy,
-        style: "stroke-linecap: round; stroke: black; stroke-width: " + priv.halfWidth.toString()
-    });
-
-    priv.tog.addEventListener("click", priv.clickFunc, false);
-    priv.setFunc(priv.on);
-    return {
-        isOn: function () {
-            return priv.on;
-        }
-    };
+    isOn() {
+        return this.#on;
+    }
 
 };
 
+class PushButton {
 
-widgets.controls.pushButton = function (settings) {
-    var
-        priv = {
-            cx: settings.cx,
-            cy: settings.cy,
-            width: settings.width,
-            halfWidth: settings.width / 2,
-            callback: settings.callback,
-            pressing: false,
-            pressed: false
-        },
-        i, line, span;
+    #butt;
+    #callback;
+    #pressing = false;
+    #pressed = false;
 
-    priv.text = svg.createText({
-        x: priv.cx,
-        yTop: priv.cy + priv.width,
-        text: settings.text
-    });
 
-    priv.butt = svg.create("circle", {
-        cx: priv.cx,
-        cy: priv.cy,
-        r: priv.width / 2,
-        fill: "black"
-    });
+    constructor({cx, cy, width, callback=null, height}) {
+        this.#callback = callback;
 
-    priv.buttonPress = function (evt) {
+        svg.createText({
+            x: cx,
+            yTop: cy + width,
+            text: text
+        });
+
+        this.#butt = svg.create("circle", {
+            cx: cx,
+            cy: cy,
+            r: width / 2,
+            fill: "black"
+        });
+
+        this.#butt.addEventListener("mousedown", (evt) => this.#buttonPress(evt), false);
+        this.#butt.addEventListener("mouseout", (evt) => this.#buttonRelease(evt), false);
+        this.#butt.addEventListener("mouseup", (evt) => this.#buttonRelease(evt), false);
+
+    }
+
+    #buttonPress(evt) {
         if (evt.preventDefault) {
             evt.preventDefault();
         }
-        priv.pressing = true;
-        svg.setAttrs(priv.butt, {fill: "red"});
-        if (priv.callback) {
-            priv.callback(true);
+        this.#pressing = true;
+        svg.setAttrs(this.#butt, {fill: "red"});
+        if (this.#callback) {
+            this.#callback(true);
         }
     };
 
-    priv.buttonRelease = function (evt) {
-        if (priv.pressing) {
-            priv.pressing = false;
-            svg.setAttrs(priv.butt, {fill: "black"});
-            if (priv.callback) {
-                priv.callback(false);
+    #buttonRelease(evt) {
+        if (this.#pressing) {
+            this.#pressing = false;
+            svg.setAttrs(this.#butt, {fill: "black"});
+            if (this.#callback) {
+                this.#callback(false);
             }
         }
     };
 
-    priv.butt.addEventListener("mousedown", priv.buttonPress, false);
-    priv.butt.addEventListener("mouseout", priv.buttonRelease, false);
-    priv.butt.addEventListener("mouseup", priv.buttonRelease, false);
 
-    return {
-        isPressing: function () {
-            return priv.pressing;
-        },
-        wasPressed: function () {
-            if (priv.pressed) {
-                priv.pressed = priv.pressing;
-                return true;
-            } else {
-                return false;
-            }
+    isPressing() {
+        return this.#pressing;
+    }
+
+    wasPressed() {
+        if (this.#pressed) {
+            this.#pressed = this.#pressing;
+            return true;
+        } else {
+            return false;
         }
-    };
+    }
 };
