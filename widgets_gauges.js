@@ -318,7 +318,7 @@ class EngineRevsGauge extends BaseGauge {
         }
         this.setNeedle(a + 180);
 
-    };
+    }
 };
 
 

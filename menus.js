@@ -21,7 +21,7 @@ var addSpin = function (menu, text, type, s) {
     s.height = 30;
     s.parent = menu.group();
     offset += 60;
-    return widgets.general[type](s);
+    return new type(s);
 };
 
 
@@ -41,7 +41,7 @@ function doHydrantMenu(x, y) {
     return {
         menu: menu,
 
-        pressure: addSpin(menu, 'Hydrant Pressure', 'numSpinner', {
+        pressure: addSpin(menu, 'Hydrant Pressure', NumSpinner, {
             min: 50,
             max: 1000,
             initial: 300,
@@ -49,24 +49,24 @@ function doHydrantMenu(x, y) {
             units: 'kPa'
         }),
 
-        length: addSpin(menu, 'Lengths of Hose', 'numSpinner', {
+        length: addSpin(menu, 'Lengths of Hose', NumSpinner, {
             min: 1,
             max: 15,
             initial: 3
         }),
 
-        rise: addSpin(menu, 'Rise from Hydrant', 'numSpinner', {
+        rise: addSpin(menu, 'Rise from Hydrant', NumSpinner, {
             min: -10,
             max: 10,
             initial: 0,
             units: 'm'
         }),
 
-        hoseSize: addSpin(menu, 'Hose Size', 'listSpinner', {
+        hoseSize: addSpin(menu, 'Hose Size', ListSpinner, {
             values: ["65mm", "twinned 65mm", "90mm"]
         }),
 
-        hoseState: addSpin(menu, 'Hose Lay State', 'listSpinner', {
+        hoseState: addSpin(menu, 'Hose Lay State', ListSpinner, {
             values: ["straight", "flaked", "spaghetti"]
         })
     };
@@ -88,34 +88,34 @@ function doAttackMenu(x, y) {
     return {
         menu: menu,
 
-        branchOption: addSpin(menu, 'Hose and Branch', 'listSpinner', {
+        branchOption: addSpin(menu, 'Hose and Branch', ListSpinner, {
             values: ["38mm & Protek 366", "65mm & Protek 368"]
         }),
 
-        numAttackLines: addSpin(menu, 'Number of Lines', 'numSpinner', {
+        numAttackLines: addSpin(menu, 'Number of Lines', NumSpinner, {
             min: 1,
             max: 4,
             initial: 1
         }),
 
-        nominalFlow: addSpin(menu, 'Flow Rate (l/m)', 'numList', {
+        nominalFlow: addSpin(menu, 'Flow Rate (l/m)', ListSpinner, {
             values: [115, 230, 360, 475]
         }),
 
-        length: addSpin(menu, 'Lengths of Hose', 'numSpinner', {
+        length: addSpin(menu, 'Lengths of Hose', NumSpinner, {
             min: 1,
             max: 15,
             initial: 3
         }),
 
-        rise: addSpin(menu, 'Rise to Branch', 'numSpinner', {
+        rise: addSpin(menu, 'Rise to Branch', NumSpinner, {
             min: -10,
             max: 10,
             initial: 0,
             units: 'm'
         }),
 
-        hoseState: addSpin(menu, 'Hose Lay State', 'listSpinner', {
+        hoseState: addSpin(menu, 'Hose Lay State', ListSpinner, {
             values: ["straight", "flaked", "spaghetti"]
         })
     };

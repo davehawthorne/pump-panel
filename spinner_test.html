@@ -10,6 +10,7 @@
         <script src="utils.js"></script>
         <script src="svg.js"></script>
         <script src="spinner.js"></script>
+        <script src="lamps.js"></script>
         <script src="widgets_gauges.js"></script>
         <script>
             /*global svg widgets utils*/
@@ -20,30 +21,50 @@
 
                     svg.setRoot(document.getElementById("svg1"));
 
-                    outGauge = new OutletGauge({cx: 400, cy: 80, radius: 75});
+                    outGauge = new OutletGauge({cx: 400, cy: 140, radius: 75});
 
-                    widgets.general.numSpinner({
+                    const colours = [[255,0,0], [0,255,0],[0,0,255]];
+                    let lamps = [];
+                    for (let i = 0; i < 3; ++i) {
+                        lamps.push(new Lamp({
+                            cx: 400 + 50 * i,
+                            cy: 350,
+                            rBevel: 20,
+                            rGlobe: 13,
+                            colour: colours[i]
+                        }));
+                    }
+
+                    function lightUp(numLeds) {
+                        for (let i = 0; i < 3; i++) {
+                            lamps[i].set(i < numLeds);
+                        }
+                    }
+
+                    new NumSpinner({
                         x: 100,
                         y: 10,
-                        width: 150,
+                        width: 250,
                         height: 50,
                         min: 222,
                         max: 1500,
                         initial: 700,
                         step: 61,
                         digits: 0,
-                        callback: outGauge.showPressure
+                        units:'kPa',
+                        callback: (p) => outGauge.showPressure(p)
                     });
 
-                    widgets.general.listSpinner({
+                    new ListSpinner({
                         x: 100,
                         y: 80,
                         width: 150,
                         height: 40,
-                        values: ["One", "Two", "three"]
+                        values: ["None", "One", "Two", "All"],
+                        callback: (numLeds, _) => lightUp(numLeds)
                     });
 
-                    widgets.general.numSpinner({
+                    new NumSpinner({
                         x: 100,
                         y: 150,
                         width: 100,
@@ -51,7 +72,7 @@
                         max: 6
                     });
 
-                    widgets.general.numSpinner({
+                    new NumSpinner({
                         x: 100,
                         y: 220,
                         width: 220,
@@ -60,7 +81,7 @@
                         units: 'mmHg'
                     });
 
-                    widgets.general.numSpinner({
+                    new NumSpinner({
                         x: 100,
                         y: 280,
                         width: 220,
@@ -70,7 +91,7 @@
                         max: 6
                     });
 
-                   widgets.general.listSpinner({
+                   new ListSpinner({
                         x: 100,
                         y: 350,
                         width: 100,

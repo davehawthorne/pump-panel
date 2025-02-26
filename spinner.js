@@ -1,235 +1,210 @@
 "use strict";
 /*global svg */
 
-var widgets = window.widgets || {};
+// no state value
+class SpinnerBase {
+    #up;
+    #down;
+    #text;
 
-widgets.general = (function () {
-    var spinnerBase = function (x, y, w, h, init, incFn, decFn, parent) {
-        var
-            g = svg.create("g", {
-                parent: parent
-            }),
+    constructor({x, y, width, height, parent=null}) {
 
-            r = svg.create("rect", {
-                x: x,
-                y: y,
-                width: w,
-                height: h,
-                parent: g
-            }),
+        const g = svg.create("g", {
+            parent: parent
+        });
 
-            up = svg.create("path", {
-                d: svg.path(['M', [x + h * 0.05, y + h * 0.45], [x + h * 0.5, y + h * 0.05], [x + h * 0.95, y + h * 0.45]]),
-                "stroke-width": 0,
-                parent: g
+        svg.create("rect", {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            parent: g
+        });
 
-            }),
+        this.#up = svg.create("path", {
+            d: svg.path(['M', [x + height * 0.05, y + height * 0.45], [x + height * 0.5, y + height * 0.05], [x + height * 0.95, y + height * 0.45]]),
+            "stroke-width": 0,
+            parent: g
 
-            down = svg.create("path", {
-                d: svg.path(['M', [x + h * 0.05, y + h * 0.55], [x + h * 0.5, y + h * 0.95], [x + h * 0.95, y + h * 0.55]]),
-                "stroke-width": 0,
-                parent: g
-            }),
+        });
 
-            val = init,
+        this.#down = svg.create("path", {
+            d: svg.path(['M', [x + height * 0.05, y + height * 0.55], [x + height * 0.5, y + height * 0.95], [x + height * 0.95, y + height * 0.55]]),
+            "stroke-width": 0,
+            parent: g
+        });
 
-            text = svg.createText({
-                text: init,
-                x: x + h * 1.1,
-                yTop: y + h * 0.8,
-                align: 'start',
-                fill: 'white',
-                fontFamily: 'Verdana',
-                fontSize: h * 0.8,
-                parent: g
-            }),
+        this.#text = svg.createText({
+            text: 'hi',
+            x: x + height * 1.1,
+            yTop: y + height * 0.8,
+            align: 'start',
+            fill: 'white',
+            fontFamily: 'Verdana',
+            fontSize: height * 0.8,
+            parent: g
+        });
 
-            change = function (evt, val, key) {
-                evt.preventDefault();
-                if (val === null) {
+        this.#up.addEventListener("mousedown", (evt) => this.change(evt, this.incFn(), 'up'));
+        this.#down.addEventListener("mousedown", (evt) => this.change(evt, this.decFn(), 'down'));
+        this.#up.addEventListener("mouseup", (evt) => this.clear());
+        this.#down.addEventListener("mouseup", (evt) => this.clear());
+        this.#up.addEventListener("mouseout", (evt) => this.clear());
+        this.#down.addEventListener("mouseout", (evt) => this.clear());
 
-                    text.text.setAttribute('fill', 'red');
-                } else {
-                    text.lines[0].nodeValue = val;
-                }
-                key.setAttribute('fill', 'red');
-            },
+        this.clear();
+    }
 
-            clear = function (evt) {
+    change(evt, displayValue, key) {
+        evt.preventDefault();
+        if (displayValue === null) {
 
-                up.setAttribute('fill', 'blue');
-                down.setAttribute('fill', 'blue');
-                text.text.setAttribute('fill', 'white');
-
-            };
-
-        up.addEventListener("mousedown", function (evt) {
-            change(evt, incFn(), up);
-        }, false);
-        down.addEventListener("mousedown", function (evt) {
-            change(evt, decFn(), down);
-        }, false);
-        up.addEventListener("mouseup", clear, false);
-        down.addEventListener("mouseup", clear, false);
-        up.addEventListener("mouseout", clear, false);
-        down.addEventListener("mouseout", clear, false);
-
-        clear();
-        return {
-            set: function (val) {
-                text.lines[0].nodeValue = val;
-            }
-        };
-
-    };
-
-    return {
-        numSpinner: function (s) {
-            var
-                min = s.min || 0,
-                max = s.max,
-                val = s.hasOwnProperty('initial') ? s.initial : min,
-                step = s.step || 1,
-                digits = s.digits || 0,
-                callback = s.callback || 0,
-                tail = s.hasOwnProperty('units') ? s.units : '',
-
-                text = function () {
-                    return val.toFixed(digits) + tail;
-                },
-
-                inc = function () {
-                    if (val >= max) {
-                        return null;
-                    }
-                    val = Math.min(max, val + step);
-                    if (callback) {
-                        callback(val);
-                    }
-                    return text();
-                },
-                dec = function () {
-                    if (val <= min) {
-                        return null;
-                    }
-                    val = Math.max(min, val - step);
-                    if (callback) {
-                        callback(val);
-                    }
-                    return text();
-                };
-            spinnerBase(s.x, s.y, s.width, s.height, text(), inc, dec, s.parent);
-
-            return {
-                value: function () {
-                    return val;
-                },
-                setCallback: function (cb) {
-                    callback = cb;
-                    callback(val);
-                }
-            };
-        },
-
-
-        listSpinner: function (s) {
-            var
-                i = 0,
-                values = s.values,
-                max = values.length - 1,
-                callback = s.callback || 0,
-
-                inc = function () {
-                    i = (i < max) ? (i + 1) : 0;
-                    if (callback) {
-                        callback(i);
-                    }
-
-                    return "" + values[i];
-                },
-                dec = function () {
-                    i = (i > 0) ? (i - 1) : max;
-                    if (callback) {
-                        callback(i);
-                    }
-                    return "" + values[i];
-                },
-                baseCmds = spinnerBase(s.x, s.y, s.width, s.height, "" + values[0], inc, dec, s.parent);
-            return {
-                value: function () {
-                    return i;
-                },
-                setCallback: function (cb) {
-                    callback = cb;
-                    callback(i);
-                },
-                setItems: function (items) {
-                    values = items;
-                    max = items.length - 1;
-                    if (i > max) {
-                        i = max;
-                    }
-                    baseCmds.set("" + values[i]);
-                    if (callback) {
-                        callback(i);
-                    }
-                }
-            };
-        },
-
-
-        numList: function (s) {
-            var
-                i = 0,
-                values = s.values,
-                max = values.length - 1,
-                callback = s.callback || 0,
-
-                inc = function () {
-                    if (i >= max) {
-                        return null;
-                    }
-                    i += 1;
-                    if (callback) {
-                        callback(values[i]);
-                    }
-
-                    return "" + values[i];
-                },
-                dec = function () {
-                    if (i <= 0) {
-                        return null;
-                    }
-                    i -= 1;
-                    if (callback) {
-                        callback(values[i]);
-                    }
-                    return "" + values[i];
-                },
-                baseCmds = spinnerBase(s.x, s.y, s.width, s.height, "" + values[0], inc, dec, s.parent);
-            return {
-                value: function () {
-                    return values[i];
-                },
-                setCallback: function (cb) {
-                    callback = cb;
-                    callback(i);
-                },
-                setItems: function (items) {
-                    values = items;
-                    max = items.length - 1;
-                    if (i > max) {
-                        i = max;
-                    }
-                    baseCmds.set("" + values[i]);
-                    if (callback) {
-                        callback(values[i]);
-                    }
-                }
-            };
+            this.#text.text.setAttribute('fill', 'red');
+        } else {
+            this.setText(displayValue);
         }
+        if (key === 'up') {
+            this.#up.setAttribute('fill', 'red');
+        } else {
+            this.#down.setAttribute('fill', 'red');
+        }
+    }
+
+    clear() {
+
+        this.#up.setAttribute('fill', 'blue');
+        this.#down.setAttribute('fill', 'blue');
+        this.#text.text.setAttribute('fill', 'white');
 
     };
-})();
+
+    setText(textVal) {
+        this.#text.lines[0].nodeValue = textVal;
+    }
+
+    static doNothing(args) {}
 
 
+}
+
+class NumSpinner extends SpinnerBase {
+
+    #max;
+    #min;
+    #step;
+    #value;
+    #units;
+    #digits;
+    #callback;
+
+    constructor({x, y, width, height, initial=null, parent=null, min=0, max, step=1, digits=0, callback=null, units=''}) {
+        super({x: x, y: y, width: width, height:height, parent:parent});
+
+        this.#max = max;
+        this.#min = min;
+        this.#units = units;
+        this.#digits = digits;
+        this.#step = step;
+
+        this.#callback = callback || SpinnerBase.doNothing;
+
+        this.#value = (initial !== null) ? initial : min;
+
+        this.setText(this.#genText());
+        this.#callback(this.#value);
+    }
+
+    #genText() {
+        return this.#value.toFixed(this.#digits) + this.#units;
+    }
+
+    incFn() {
+        if (this.#value >= this.#max) {
+            return null;
+        }
+        this.#value = Math.min(this.#max, this.#value + this.#step);
+        this.#callback(this.#value);
+        return this.#genText();
+    }
+
+    decFn() {
+        if (this.#value <= this.#min) {
+            return null;
+        }
+        this.#value = Math.max(this.#min, this.#value - this.#step);
+        this.#callback(this.#value);
+        return this.#genText();
+    };
+
+    value() {
+        return this.#value;
+    }
+
+    setCallback(callback) {
+        this.#callback = callback;
+        this.#callback(this.#value);
+    }
+
+
+}
+
+class ListSpinner extends SpinnerBase {
+
+    #index;
+    #values;
+    #max;
+    #callback;
+
+    constructor({x, y, width, height, parent=null, callback=null, values}) {
+
+        super({x: x, y: y, width: width, height:height, parent:parent});
+        this.#index = 0;
+        this.#values = values;
+        this.#max = values.length - 1;
+        this.#callback = callback || SpinnerBase.doNothing;
+
+        this.setText(this.#values[this.#index]);
+        this.#callCallback();
+
+    }
+
+    incFn() {
+        this.#index = (this.#index < this.#max) ? (this.#index + 1) : 0;
+        this.#callCallback();
+        return this.#values[this.#index];
+    }
+
+    decFn() {
+        this.#index = (this.#index > 0) ? (this.#index - 1) : this.#max;
+        this.#callCallback();
+        return this.#values[this.#index];
+    }
+
+    value() {
+        return this.#values[this.#index];
+    }
+
+    index() {
+        return this.#index;
+    }
+
+    setCallback(callback) {
+        this.#callback = callback;
+
+    }
+
+    #callCallback() {
+        this.#callback(this.#index, this.#values[this.#index]);
+    }
+
+    setItems(items) {
+        this.#values = items;
+        this.#max = items.length - 1;
+        if (this.#index > this.#max) {
+            this.#index = this.#max;
+        }
+        this.#callCallback();
+        this.setText(this.#values[this.#index]);
+    }
+
+}

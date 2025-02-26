@@ -199,8 +199,8 @@ var hoseLayImpact = [
 var setHydrantLineResistance = function () {
     var
         menu = panelItems.hydrantMenu,
-        lengthRes = hoseResistances[menu.hoseSize.value()],
-        adjust = hoseLayImpact[menu.hoseState.value()];
+        lengthRes = hoseResistances[menu.hoseSize.index()],
+        adjust = hoseLayImpact[menu.hoseState.index()];
     hydrantLine.resistance = menu.length.value() * lengthRes * adjust;
 };
 
@@ -239,7 +239,7 @@ var buildPumpPanel = function () {
         panelItems.attackMenu.numAttackLines.setCallback(function (val) {
             numAttackLines = val;
         });
-        panelItems.attackMenu.nominalFlow.setCallback(attackLine.dialUpFlow);
+        panelItems.attackMenu.nominalFlow.setCallback((i,v) => attackLine.dialUpFlow(v));
         panelItems.attackMenu.length.setCallback(attackLine.setNumHoseLengths);
         panelItems.attackMenu.rise.setCallback(attackLine.setRise);
         panelItems.attackMenu.branchOption.setCallback(branchChange);
@@ -257,9 +257,3 @@ var buildPumpPanel = function () {
         utils.handleException(ex);
     }
 };
-
-
-
-
-
-
