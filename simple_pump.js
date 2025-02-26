@@ -124,8 +124,8 @@ function setInValve(value) {
 
 
 function setThrottle(level) {
-    engine.rpm = level * 5000;
-    panelItems.redline.set(engine.rpm > 4000);
+    engine.rpm = 500 + level * 3500;
+    panelItems.redline.set(engine.rpm > 3500);
 }
 
 

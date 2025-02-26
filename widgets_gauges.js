@@ -14,6 +14,7 @@ class DialGraduationBuilder {
     #cx;
     #cy;
     #radius;
+    static #trim = utils.buildRounder(2);
 
     constructor(cx, cy, radius) {
         this.#cx = cx;
@@ -21,15 +22,19 @@ class DialGraduationBuilder {
         this.#radius = radius;
     }
 
-    #lineCoords(angle, r1, r2) {
-        const trim = utils.buildRounder(3);
+    #getXY(angle) {
         const theta = (angle + 90) * Math.PI / 180;
-        const x = Math.cos(theta);
-        const y = Math.sin(theta);
-        const x1 = trim(this.#cx + this.#radius * r1 * x);
-        const y1 = trim(this.#cy + this.#radius * r1 * y);
-        const x2 = trim(this.#cx + this.#radius * r2 * x);
-        const y2 = trim(this.#cy + this.#radius * r2 * y);
+        const xr = Math.cos(theta);
+        const yr = Math.sin(theta);
+        return [xr, yr];
+    }
+
+    #lineCoords(angle, r1, r2) {
+        const [xr, yr] = this.#getXY(angle);
+        const x1 = DialGraduationBuilder.#trim(this.#cx + this.#radius * r1 * xr);
+        const y1 = DialGraduationBuilder.#trim(this.#cy + this.#radius * r1 * yr);
+        const x2 = DialGraduationBuilder.#trim(this.#cx + this.#radius * r2 * xr);
+        const y2 = DialGraduationBuilder.#trim(this.#cy + this.#radius * r2 * yr);
 
         return `M${x1} ${y1} L${x2} ${y2} `;
     }
@@ -53,8 +58,31 @@ class DialGraduationBuilder {
         this.#midLine += this.#lineCoords(angle, 0.70, 0.65);
     }
 
+    #getPos(angle, r) {
+        const [xr, yr] = this.#getXY(angle);
+        const x = DialGraduationBuilder.#trim(this.#cx + this.#radius * r * xr);
+        const y = DialGraduationBuilder.#trim(this.#cy + this.#radius * r * yr);
+        return [x, y];
+    }
+
+    drawArc(start_angle, end_angle, radius, attrs) {
+
+            const paintRad = radius * this.#radius;
+            const [sx, sy] = this.#getPos(start_angle, radius);
+            const [ex, ey] = this.#getPos(end_angle, radius);
+            const path = `M ${sx} ${sy} A ${paintRad} ${paintRad} 0 0 1 ${ex} ${ey}`;
+            const arc = svg.create(
+                "path",
+                {
+                    d: path,
+                    fill: 'none'
+                }
+            );
+            svg.change(arc, attrs);
+
+    }
+
     draw(color) {
-        // console.log(`draw ${color} ${this.#thinLine.length}`)
         return [
             svg.create("path", {stroke: color, "stroke-width": 1, d: this.#thinLine}),
             svg.create("path", {stroke: color, "stroke-width": 2, d: this.#midLine}),
@@ -85,8 +113,6 @@ class BaseGauge {
 
 
     constructor(radius, cx, cy) {
-
-        // console.log(`BaseGauge ${cx} ${cy} ${radius}`)
 
         if (!("convexGaugeBevelFill" in BaseGauge.#fills)) {
             BaseGauge.#fills.convexGaugeBevelFill = svg.linGrad({
@@ -171,7 +197,6 @@ class HighPressureGauge extends BaseGauge {
 
 /// Creates a high pressure outlet gauge: 0 to 4000kPa
     constructor({radius, cx, cy}) {
-        // console.log(`HighPressureGauge ${cx} ${cy} ${radius}`)
 
         super(radius, cx, cy);
         const grad = new DialGraduationBuilder(cx, cy, radius);
@@ -274,10 +299,55 @@ class OutletGauge extends BaseGauge {
 class EngineRevsGauge extends BaseGauge {
     constructor({radius, cx, cy}) {
         super(radius, cx, cy);
+
         const grad = new DialGraduationBuilder(cx, cy, radius);
 
+        grad.drawArc(
+            45 + 6.75 * 10,
+            45 + 6.75 * 20,
+            0.8,
+            {
+                'stroke-width': radius / 10,
+                stroke: 'green',
+            }
+        );
+
+        grad.drawArc(
+            45 + 6.75 * 25,
+            45 + 6.75 * 40,
+            0.8,
+            {
+                'stroke-width': radius / 10,
+                stroke: 'red',
+            }
+        );
+        //     const [ex, ey] = grad.getPos(, 0.8);
+        //     const path = `M ${sx} ${sy} A ${paintRad} ${paintRad} 0 0 1 ${ex} ${ey}`;
+        //     svg.create(
+        //         "path",
+        //         {
+        //             d: path,
+        //             fill: 'none'
+
+        //         }
+        //     );
+        // }
+        // {
+        //     const [sx, sy] = grad.getPos(45 + 6.75 * 25, 0.8);
+        //     const [ex, ey] = grad.getPos(45 + 6.75 * 40, 0.8);
+        //     const path = `M ${sx} ${sy} A ${paintRad} ${paintRad} 0 0 1 ${ex} ${ey}`;
+        //     svg.create(
+        //         "path",
+        //         {
+        //             d: path,
+        //             'stroke-width': radius / 10,
+        //             stroke: 'red',
+        //             fill: 'none'
+        //         }
+        //     );
+        // }
         grad.zero(45);
-        for (let a = 45 + 5.4, i = 1; a <= 315; a += 5.4)
+        for (let a = 45 + 6.75, i = 1; a <= 315; a += 6.75)
         {
 
             if (i === 10) {
@@ -298,10 +368,9 @@ class EngineRevsGauge extends BaseGauge {
             [
                 [-0.5, 0.4, '0', 'start'],
                 [-0.65, -0.1, '1000', 'start'],
-                [-0.45, -0.4, '2000', 'start'],
-                [0.45, -0.4, '3000', 'end'],
-                [0.65, -0.1, '4000', 'end'],
-                [0.5, 0.4, '5000', 'end'],
+                [0.0, -0.4, '2000', 'middle'],
+                [0.65, -0.1, '3000', 'end'],
+                [0.5, 0.4, '4000', 'end'],
                 [0.0, 0.6, 'RPM', 'middle']
             ]
         );
@@ -311,10 +380,10 @@ class EngineRevsGauge extends BaseGauge {
         let a;
         if (rpm < 0 || isNaN(rpm)) {
             a = -135; // bottom out
-        } else if (rpm > 5000) {
+        } else if (rpm > 4000) {
             a = 135;  // 100rpm in 20deg
         } else {
-            a = -135 + rpm / 5000 * 270;
+            a = -135 + rpm / 4000 * 270;
         }
         this.setNeedle(a + 180);
 

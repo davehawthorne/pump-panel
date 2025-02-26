@@ -10,7 +10,8 @@ var
         panel: "grey",
         redLamp: [255, 0, 0],
         greenLamp: [0, 255, 0],
-        blueLamp: [0, 0, 255]
+        blueLamp: [0, 0, 255],
+        yellowLamp: [255, 255, 0],
     },
 
     dim = {
@@ -28,7 +29,7 @@ var
         valveHeight: 250,
         rBevel: 20,
         rGlobe: 15,
-        lampSpacing: 60
+        lampSpacing: 50
     },
 
     x = {
@@ -45,7 +46,7 @@ var
     },
 
     y = {
-        gc: 100,
+        gc: 150,
         l: 300,
         vt: 250,
         vb: 350,
@@ -202,6 +203,22 @@ function paintPanel() {
     });
 
     svg.createText({
+        x: x.lampText,
+        yTop: y.lamps + 2 * dim.lampSpacing,
+        color: colour.text,
+        align: "start",
+        text: 'Over Revving'
+    });
+
+    svg.createText({
+        x: x.lampText,
+        yTop: y.lamps + 3 * dim.lampSpacing,
+        color: colour.text,
+        align: "start",
+        text: 'Branch Under-pressure'
+    });
+
+    svg.createText({
         x: x.bg,
         yTop: y.gc + dim.gauge,
         color: colour.text,
@@ -243,8 +260,8 @@ function attachWidgets(de) {
     return {
         cavitation: addLamp(x.lamps, y.lamps, colour.redLamp),
         hoseCollapse: addLamp(x.lamps, y.lamps + dim.lampSpacing, colour.blueLamp),
-        redline: addLamp(x.p + dim.rpm, y.rpm - dim.rpm, colour.redLamp),
-        underPressure: addLamp(x.bg + dim.rpm, y.gc - dim.rpm, colour.redLamp),
+        redline: addLamp(x.lamps, y.lamps + dim.lampSpacing * 2, colour.redLamp),
+        underPressure: addLamp(x.lamps, y.lamps + dim.lampSpacing * 3, colour.yellowLamp),
 
         inValve: new OutletValve({
             yTop: y.vt,
